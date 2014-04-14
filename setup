@@ -63,7 +63,6 @@ else
   else
     echo -e "cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host" >> configure
   fi
-  echo -e "${build_tool}\n" >> configure
   chmod a+x configure
 fi
 
