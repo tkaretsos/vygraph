@@ -49,20 +49,6 @@ else
   ln -s ${llvm_obj_dir}/bin/vygraph vygraph
 fi
 
-# Generate build script
-if [ -e ${proj_root_dir}/build ]; then
-  echo -e "Cannot create convenience script ${proj_root_dir}/build. File already exists."
-else
-  cd ${proj_root_dir}
-  echo -e "#!/usr/bin/sh\n" > build
-  echo -e "#\n# Execute this script to build the project.\n#\n" >> build
-  echo -e "# Go to the directory that LLVM build lives and run ${build_tool}" >> build
-  echo -e "cd ${llvm_obj_dir}" >> build
-  echo -e "${build_tool} vygraph" >> build
-  echo -e "cd ${proj_root_dir}\n" >> build
-  chmod a+x build
-fi
-
 # Generate configure script
 if [ -e ${proj_root_dir}/configure ]; then
   echo -e "Cannot create convenience script ${proj_root_dir}/configure. File already exists."
