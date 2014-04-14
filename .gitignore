@@ -1,0 +1,11 @@
+
+##################
+# Project specific
+##################
+
+llvm_dirs
+CMakeFiles/*
+cmake_install.cmake
+Makefile
+vygraph
+build

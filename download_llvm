@@ -1,0 +1,71 @@
+#!/usr/bin/sh
+
+llvm_version="3.4"
+build_tool="make"
+llvm_tar=llvm-${llvm_version}.src.tar.gz
+clang_tar=clang-${llvm_version}.src.tar.gz
+tools_tar=clang-tools-extra-${llvm_version}.src.tar.gz
+
+cur_dir=`pwd`
+proj_root_dir="$(cd "$(dirname "$0")" && pwd)"
+
+if [ $# -eq 0 ]; then
+  llvm_root_dir=${proj_root_dir}/llvm-clang-${llvm_version}
+else
+  if [ ! -d "$1" ]; then
+    echo -e "Directory $1 does not exist."
+    exit 1
+  else
+    cd $1
+    llvm_root_dir=`pwd`/llvm-clang-${llvm_version}
+    cd ${proj_root_dir}
+  fi
+fi
+
+llvm_src_dir=${llvm_root_dir}/src
+llvm_obj_dir=${llvm_root_dir}/build
+llvm_bin_dir=${llvm_root_dir}/run
+
+mkdir ${llvm_root_dir}
+mkdir ${llvm_obj_dir}
+mkdir ${llvm_bin_dir}
+
+# Download LLVM
+cd ${llvm_root_dir}
+wget http://llvm.org/releases/${llvm_version}/${llvm_tar}
+tar -xzf ${llvm_tar}
+mv llvm-${llvm_version} src
+rm ${llvm_tar}
+
+# Download clang
+cd ${llvm_src_dir}/tools
+wget http://llvm.org/releases/${llvm_version}/${clang_tar}
+tar -zxf ${clang_tar}
+rm ${clang_tar}
+mv clang-${llvm_version} clang
+
+# Download clang extra tools
+cd clang/tools
+wget http://llvm.org/releases/${llvm_version}/${tools_tar}
+tar -zxf ${tools_tar}
+rm ${tools_tar}
+mv clang-tools-extra-${llvm_version} extra
+
+# configure and build LLVM and clang
+cd ${llvm_obj_dir}
+if [ $build_tool = "ninja" ]; then
+  cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
+else
+  cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
+fi
+${build_tool}
+
+cd ${cur_dir}
+
+echo -e "LLVM source  (llvm_src_dir): ${llvm_src_dir}"
+echo -e "LLVM build   (llvm_obj_dir): ${llvm_obj_dir}"
+echo -e "LLVM install (llvm_bin_dir): ${llvm_bin_dir}"
+
+# "llvm_dirs" file contains the two parameters that have to be passed to
+# configure script. e.g.: $ ./configure $(cat llvm_dirs)
+echo -e "${llvm_src_dir} ${llvm_obj_dir}" > llvm_dirs
