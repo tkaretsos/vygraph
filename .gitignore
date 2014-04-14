@@ -11,3 +11,12 @@ vygraph
 build
 configure
 
+############
+# Qt Creator
+############
+
+vygraph.config
+vygraph.creator
+vygraph.files
+vygraph.includes
+vygraph.creator.user
