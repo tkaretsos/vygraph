@@ -4,8 +4,8 @@
 ##################
 
 llvm_dirs
-CMakeFiles/*
-cmake_install.cmake
-Makefile
+*CMakeFiles*
+*.cmake
+*Makefile
 vygraph
 build
