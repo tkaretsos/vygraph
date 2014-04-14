@@ -30,28 +30,28 @@ mkdir ${llvm_root_dir}
 mkdir ${llvm_obj_dir}
 mkdir ${llvm_bin_dir}
 
-# Download LLVM
+# Download and extract LLVM
 cd ${llvm_root_dir}
 wget http://llvm.org/releases/${llvm_version}/${llvm_tar}
 tar -xzf ${llvm_tar}
 mv llvm-${llvm_version} src
 rm ${llvm_tar}
 
-# Download clang
+# Download and extract clang
 cd ${llvm_src_dir}/tools
 wget http://llvm.org/releases/${llvm_version}/${clang_tar}
 tar -zxf ${clang_tar}
 rm ${clang_tar}
 mv clang-${llvm_version} clang
 
-# Download clang extra tools
+# Download and extract clang extra tools
 cd clang/tools
 wget http://llvm.org/releases/${llvm_version}/${tools_tar}
 tar -zxf ${tools_tar}
 rm ${tools_tar}
 mv clang-tools-extra-${llvm_version} extra
 
-# configure and build LLVM and clang
+# Configure and build LLVM and clang
 cd ${llvm_obj_dir}
 if [ $build_tool = "ninja" ]; then
   cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
@@ -67,5 +67,5 @@ echo -e "LLVM build   (llvm_obj_dir): ${llvm_obj_dir}"
 echo -e "LLVM install (llvm_bin_dir): ${llvm_bin_dir}"
 
 # "llvm_dirs" file contains the two parameters that have to be passed to
-# configure script. e.g.: $ ./configure $(cat llvm_dirs)
-echo -e "${llvm_src_dir} ${llvm_obj_dir}" > llvm_dirs
+# configure script. e.g.: $ ./setup $(cat llvm_dirs). See setup script.
+echo -e "${llvm_src_dir} ${llvm_obj_dir} ${llvm_bin_dir}" > llvm_dirs
