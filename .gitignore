@@ -9,3 +9,5 @@ llvm_dirs
 *Makefile
 vygraph
 build
+configure
+
