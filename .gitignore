@@ -4,6 +4,7 @@
 ##################
 
 llvm_dirs
+llvm-clang-*
 *CMakeFiles*
 *.cmake
 *Makefile
