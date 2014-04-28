@@ -16,6 +16,12 @@ if [ $# -ne 3 ]; then
   exit 1
 fi
 
+command -v cmake >/dev/null 2>&1 || {
+  echo -e "cmake is required to run this script. Aborting..." >&2;
+  echo -e "hint: apt-get install cmake\n" >&2;
+  exit 1;
+}
+
 if [ -e "$1"/README.txt ]; then
   llvm_src_dir="$(cd "$1" && pwd)"
 else
@@ -49,21 +55,12 @@ else
   ln -s ${llvm_obj_dir}/bin/vygraph vygraph
 fi
 
-# Generate configure script
-if [ -e ${proj_root_dir}/configure ]; then
-  echo -e "Cannot create convenience script ${proj_root_dir}/configure. File already exists."
+cd ${llvm_obj_dir}
+if [ $build_tool = "ninja" ]; then
+    cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
 else
-  cd ${proj_root_dir}
-  echo -e "#!/usr/bin/sh\n" > configure
-  echo -e "#\n# Execute this script when you edit the cmake files.\n#\n" >> configure
-  echo -e "# Go to the build directory of LLVM and run cmake" >> configure
-  echo -e "cd ${llvm_obj_dir}" >> configure
-  if [ $build_tool = "ninja" ]; then
-    echo -e "cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host" >> configure
-  else
-    echo -e "cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host" >> configure
-  fi
-  chmod a+x configure
+    cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
 fi
 
 cd ${call_dir}
+
