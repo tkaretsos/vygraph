@@ -1,28 +1,60 @@
-// Declares clang::SyntaxOnlyAction.
+#include <iostream>
+#include <memory>
+#include <vector>
+
+#include "llvm/Support/CommandLine.h"
+#include "llvm/ADT/IntrusiveRefCntPtr.h"
+#include "llvm/ADT/OwningPtr.h"
+#include "llvm/IR/Module.h"
+
 #include "clang/Frontend/FrontendActions.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/CompilerInvocation.h"
+
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
-// Declares llvm::cl::extrahelp.
-#include "llvm/Support/CommandLine.h"
+#include "clang/CodeGen/CodeGenAction.h"
+
+#include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/DiagnosticIDs.h"
 
 using namespace clang::tooling;
+using namespace clang;
 using namespace llvm;
+using namespace std;
 
-// Apply a custom category to all command-line options so that they are the
-// only ones displayed.
-static llvm::cl::OptionCategory MyToolCategory("my-tool options");
-
-// CommonOptionsParser declares HelpMessage with a description of the common
-// command-line options related to the compilation database and input files.
-// It's nice to have this help message in all tools.
-static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
-
-// A help message for this specific tool can be added afterwards.
-static cl::extrahelp MoreHelp("\nMore help text...");
 
 int main(int argc, const char **argv) {
-  CommonOptionsParser OptionsParser(argc, argv);
-  ClangTool Tool(OptionsParser.getCompilations(),
-                 OptionsParser.getSourcePathList());
-  return Tool.run(newFrontendActionFactory<clang::SyntaxOnlyAction>());
+
+  string inPath = "inputs/test.c";
+  vector<const char*> args;
+  args.push_back(inPath.c_str());
+
+  IntrusiveRefCntPtr<DiagnosticIDs> diagIDs(new DiagnosticIDs);
+  DiagnosticsEngine diagEngine(diagIDs, new DiagnosticOptions());
+
+  OwningPtr<CompilerInvocation> CI(new CompilerInvocation);
+  CompilerInvocation::CreateFromArgs(*CI, &args[0], &args[0] + args.size(),
+                                     diagEngine);
+
+  CompilerInstance instance;
+  instance.setInvocation(CI.take());
+
+  instance.setDiagnostics(instance.createDiagnostics(new DiagnosticOptions()).getPtr());
+  if (!instance.hasDiagnostics()) {
+    cout << "no diagnostics" << endl;
+    return 1;
+  }
+
+  OwningPtr<CodeGenAction> action(new EmitLLVMOnlyAction());
+  if (!instance.ExecuteAction(*action)) {
+    cout << "execute action failed" << endl;
+    return 1;
+  }
+
+  llvm::Module* module = action->takeModule();
+  for (llvm::Function& function : module->getFunctionList())
+    cout << function.getName().str() << endl;
+
+  return 0;
 }

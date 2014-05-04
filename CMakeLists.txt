@@ -8,7 +8,8 @@ add_clang_executable(vygraph
 
 target_link_libraries(vygraph
     clangTooling
-    clangBasic
+    clangCodeGen
     clangASTMatchers
+    clangBasic
 )
 
