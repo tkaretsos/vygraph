@@ -10,6 +10,7 @@ llvm-clang-*
 *Makefile
 vygraph
 build
+*.o
 
 ############
 # Qt Creator
