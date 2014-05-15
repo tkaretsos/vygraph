@@ -1,1 +1,9 @@
-int main () { return 0; }
+
+void writer() {
+
+}
+
+int main () {
+
+  return 0;
+}
