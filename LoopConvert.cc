@@ -2,59 +2,73 @@
 #include <memory>
 #include <vector>
 
-#include "llvm/Support/CommandLine.h"
 #include "llvm/ADT/IntrusiveRefCntPtr.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "llvm/IR/Module.h"
 
-#include "clang/Frontend/FrontendActions.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/CompilerInvocation.h"
-
-#include "clang/Tooling/CommonOptionsParser.h"
-#include "clang/Tooling/Tooling.h"
-#include "clang/CodeGen/CodeGenAction.h"
-
 #include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/DiagnosticIDs.h"
 
-using namespace clang::tooling;
-using namespace clang;
+#include "clang/CodeGen/CodeGenAction.h"
+
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/CompilerInvocation.h"
+
+namespace vg {
+clang::EmitLLVMOnlyAction* getAction(int, const char**);
+}
+
 using namespace llvm;
-using namespace std;
 
+int main(int argc, const char** argv) {
 
-int main(int argc, const char **argv) {
+  OwningPtr<clang::EmitLLVMOnlyAction> action(vg::getAction(argc, argv));
 
-  string inPath = "inputs/test.c";
-  vector<const char*> args;
-  args.push_back(inPath.c_str());
+  Module* module = action->takeModule();
+  for (Function& function : module->getFunctionList()) {
+    std::cout << function.getName().str() << std::endl;
+    auto& list = function.front().getInstList();
+    for (auto inst = list.begin(); inst != list.end(); inst++) {
+      std::cout << inst->getOpcodeName() << std::endl;
+    }
+  }
 
-  IntrusiveRefCntPtr<DiagnosticIDs> diagIDs(new DiagnosticIDs);
+  return 0;
+}
+
+namespace vg {
+
+using namespace clang;
+
+EmitLLVMOnlyAction*
+getAction(int argc, const char** argv) {
+
+  std::vector<const char*> args(argv, argv + argc);
+
+  llvm::IntrusiveRefCntPtr<DiagnosticIDs> diagIDs(new DiagnosticIDs);
   DiagnosticsEngine diagEngine(diagIDs, new DiagnosticOptions());
 
-  OwningPtr<CompilerInvocation> CI(new CompilerInvocation);
-  CompilerInvocation::CreateFromArgs(*CI, &args[0], &args[0] + args.size(),
+  llvm::OwningPtr<CompilerInvocation> CI(new CompilerInvocation);
+  CompilerInvocation::CreateFromArgs(*CI, &args[1], &args[0] + args.size(),
                                      diagEngine);
 
   CompilerInstance instance;
   instance.setInvocation(CI.take());
-
-  instance.setDiagnostics(instance.createDiagnostics(new DiagnosticOptions()).getPtr());
+  auto diags = instance.createDiagnostics(new DiagnosticOptions());
+  //diags->setSuppressAllDiagnostics(true);
+  instance.setDiagnostics(diags.getPtr());
   if (!instance.hasDiagnostics()) {
-    cout << "no diagnostics" << endl;
-    return 1;
+    std::cerr << "Compiler instance has no diagnostics" << std::endl;
+    return nullptr;
   }
 
-  OwningPtr<CodeGenAction> action(new EmitLLVMOnlyAction());
+  EmitLLVMOnlyAction* action = new EmitLLVMOnlyAction();
   if (!instance.ExecuteAction(*action)) {
-    cout << "execute action failed" << endl;
-    return 1;
+    std::cerr << "Action execution failed" << std::endl;
+    return nullptr;
   }
 
-  llvm::Module* module = action->takeModule();
-  for (llvm::Function& function : module->getFunctionList())
-    cout << function.getName().str() << endl;
-
-  return 0;
+  return action;
 }
+
+} // namespace vg
