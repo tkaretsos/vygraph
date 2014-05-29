@@ -8,12 +8,14 @@ void* add() {
 }
 
 int main() {
+    int a;
     pthread_t thread;
     if (pthread_create(&thread, NULL, add, NULL)) {
         printf("Error - pthread_create()\n");
         return 1;
     }
     add();
+    a = *((int*) add());
     pthread_join(thread, NULL);
     return 0;
 }
