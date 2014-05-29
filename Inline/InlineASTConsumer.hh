@@ -9,11 +9,10 @@
 namespace vy {
 
 class InlineASTConsumer : public clang::ASTConsumer {
-
-  InlineASTVisitor visitor;
+  InlineASTVisitor inliner;
 public:
-    InlineASTConsumer(clang::Rewriter&);
-    bool HandleTopLevelDecl(clang::DeclGroupRef) override;
+  InlineASTConsumer(clang::Rewriter&);
+  bool HandleTopLevelDecl(clang::DeclGroupRef) override;
 };
 
 } // namespace vy

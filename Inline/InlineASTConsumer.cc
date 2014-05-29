@@ -4,12 +4,12 @@ namespace vy {
 
 using namespace clang;
 
-InlineASTConsumer::InlineASTConsumer(Rewriter& rewriter) : visitor(rewriter)
+InlineASTConsumer::InlineASTConsumer(Rewriter& rewriter) : inliner(rewriter)
 { }
 
 bool InlineASTConsumer::HandleTopLevelDecl(DeclGroupRef decls) {
   for (auto decl = decls.begin(); decl != decls.end(); ++decl)
-    visitor.TraverseDecl(*decl);
+    inliner.TraverseDecl(*decl);
 
   return true;
 }
