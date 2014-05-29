@@ -4,7 +4,8 @@ namespace vy {
 
 using namespace clang;
 
-InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter) : rewriter(rewriter) {
+InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
+  : rewriter(rewriter), context(context) {
   opts.RemoveLineIfEmpty = true;
 }
 

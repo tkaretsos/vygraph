@@ -11,7 +11,7 @@ namespace vy {
 class InlineASTConsumer : public clang::ASTConsumer {
   InlineASTVisitor inliner;
 public:
-  InlineASTConsumer(clang::Rewriter&);
+  InlineASTConsumer(clang::Rewriter&, clang::ASTContext&);
   bool HandleTopLevelDecl(clang::DeclGroupRef) override;
 };
 

@@ -13,7 +13,7 @@ InlineAction::InlineAction() { }
 ASTConsumer* InlineAction::CreateASTConsumer(CompilerInstance& CI,
                                              llvm::StringRef file) {
   rewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
-  return new InlineASTConsumer(rewriter);
+  return new InlineASTConsumer(rewriter, CI.getASTContext());
 }
 
 void InlineAction::EndSourceFileAction() {
@@ -29,8 +29,8 @@ void InlineAction::EndSourceFileAction() {
   if (!errors.empty())
     llvm::errs() << errors.c_str() << "\n";
   else {
-      rewriter.getEditBuffer(SM.getMainFileID()).write(outfile);
-      rewriter.getEditBuffer(SM.getMainFileID()).write(llvm::outs());
+    rewriter.getEditBuffer(SM.getMainFileID()).write(outfile);
+    rewriter.getEditBuffer(SM.getMainFileID()).write(llvm::outs());
   }
 }
 
