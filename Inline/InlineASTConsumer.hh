@@ -4,11 +4,15 @@
 #include "clang/AST/ASTConsumer.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 
+#include "AnalysisASTVisitor.hh"
 #include "InlineASTVisitor.hh"
+#include "../FunctionManager.hh"
 
 namespace vy {
 
 class InlineASTConsumer : public clang::ASTConsumer {
+  FunctionManager funMgr;
+  AnalysisASTVisitor analyzer;
   InlineASTVisitor inliner;
 public:
   InlineASTConsumer(clang::Rewriter&);
