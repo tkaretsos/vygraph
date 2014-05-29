@@ -3,14 +3,11 @@
 
 #include "clang/AST/RecursiveASTVisitor.h"
 
-#include "../FunctionManager.hh"
-
 namespace vy {
 
 class AnalysisASTVisitor : public clang::RecursiveASTVisitor<AnalysisASTVisitor> {
-  FunctionManager& funMgr;
 public:
-  AnalysisASTVisitor(FunctionManager&);
+  AnalysisASTVisitor();
 };
 
 } // namespace vy

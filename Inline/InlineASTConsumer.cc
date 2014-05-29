@@ -5,7 +5,7 @@ namespace vy {
 using namespace clang;
 
 InlineASTConsumer::InlineASTConsumer(Rewriter& rewriter)
-  : analyzer(funMgr), inliner(rewriter)
+  : inliner(rewriter)
 { }
 
 bool InlineASTConsumer::HandleTopLevelDecl(DeclGroupRef decls) {

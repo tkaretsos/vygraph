@@ -2,8 +2,6 @@
 
 namespace vy {
 
-AnalysisASTVisitor::AnalysisASTVisitor(FunctionManager& manager)
-  : funMgr(manager)
-{ }
+AnalysisASTVisitor::AnalysisASTVisitor() { }
 
 } // namespace vy
