@@ -12,6 +12,7 @@ vygraph
 build
 *.o
 *.vy.c
+*.autosave
 
 ############
 # Qt Creator
