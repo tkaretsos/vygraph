@@ -7,7 +7,6 @@
 namespace vy {
 
 class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
-
   clang::Rewriter& rewriter;
   clang::Rewriter::RewriteOptions opts;
 public:

@@ -29,8 +29,8 @@ void InlineAction::EndSourceFileAction() {
   if (!errors.empty())
     llvm::errs() << errors.c_str() << "\n";
   else {
-      rewriter.getEditBuffer(SM.getMainFileID()).write(outfile);
-      rewriter.getEditBuffer(SM.getMainFileID()).write(llvm::outs());
+    rewriter.getEditBuffer(SM.getMainFileID()).write(outfile);
+    rewriter.getEditBuffer(SM.getMainFileID()).write(llvm::outs());
   }
 }
 
