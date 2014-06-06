@@ -2,6 +2,8 @@
 
 namespace vy {
 
+FunctionManager functionMgr;
+
 FunctionInfo::FunctionInfo() { }
 
 FunctionInfo::FunctionInfo(std::string name, clang::SourceLocation location,
@@ -9,29 +11,28 @@ FunctionInfo::FunctionInfo(std::string name, clang::SourceLocation location,
   : name(name), location(location), deleteDeclaration(deleteDeclaration)
 { }
 
-
-FunctionManager::container FunctionManager::functions_;
+FunctionManager::FunctionManager() { }
 
 void FunctionManager::add(const FunctionInfo& info) {
-  FunctionManager::functions_.push_back(info);
+  functions_.push_back(info);
 }
 
-
 void FunctionManager::add(const std::string& name,
-                                 const clang::SourceLocation& location) {
-  FunctionManager::functions_.emplace_back(name, location, false);
+                          const clang::SourceLocation& location,
+                          bool deleteDeclaration) {
+  functions_.emplace_back(name, location, deleteDeclaration);
 }
 
 FunctionManager::iterator FunctionManager::begin() {
-  return FunctionManager::functions_.begin();
+  return functions_.begin();
 }
 
 FunctionManager::iterator FunctionManager::end() {
-  return FunctionManager::functions_.end();
+  return functions_.end();
 }
 
 size_t FunctionManager::size() {
-  return FunctionManager::functions_.size();
+  return functions_.size();
 }
 
 }

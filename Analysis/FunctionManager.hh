@@ -20,16 +20,18 @@ class FunctionManager {
   typedef std::vector<FunctionInfo> container;
   typedef container::const_iterator iterator;
 
-  static container functions_;
-  FunctionManager();
+  container functions_;
   FunctionManager(const FunctionManager&);
 public:
-  static void add(const FunctionInfo&);
-  static void add(const std::string&, const clang::SourceLocation&);
-  static iterator begin();
-  static iterator end();
-  static size_t size();
+  FunctionManager();
+  void add(const FunctionInfo&);
+  void add(const std::string&, const clang::SourceLocation&, bool = false);
+  iterator begin();
+  iterator end();
+  size_t size();
 };
+
+extern FunctionManager functionMgr;
 
 }
 
