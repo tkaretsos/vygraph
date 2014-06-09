@@ -1,5 +1,5 @@
-#ifndef VYGRAPH_ANALYSISMANAGER_H
-#define VYGRAPH_ANALYSISMANAGER_H
+#ifndef VYGRAPH_FUNCTIONMANAGER_H
+#define VYGRAPH_FUNCTIONMANAGER_H
 
 #include <vector>
 
@@ -9,7 +9,7 @@ namespace vy {
 
 struct FunctionInfo {
   FunctionInfo();
-  FunctionInfo(std::string, clang::SourceLocation, bool = false);
+  FunctionInfo(std::string, clang::SourceLocation, bool = true);
 
   std::string name;
   clang::SourceLocation location;
@@ -20,15 +20,13 @@ class FunctionManager {
   typedef std::vector<FunctionInfo> container;
   typedef container::const_iterator iterator;
 
-  container functions_;
+  container userFunctions_;
   FunctionManager(const FunctionManager&);
 public:
   FunctionManager();
-  void add(const FunctionInfo&);
-  void add(const std::string&, const clang::SourceLocation&, bool = false);
-  iterator begin();
-  iterator end();
-  size_t size();
+  void addUserFunction(const FunctionInfo&);
+  void addUserFunction(const std::string&, const clang::SourceLocation&,
+                       bool = true);
 };
 
 extern FunctionManager functionMgr;
