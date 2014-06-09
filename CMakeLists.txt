@@ -2,6 +2,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11")
 
 add_clang_executable(vygraph
   Analysis/FunctionManager.cc
+  Analysis/Analyzer.cc
   Inline/InlineASTVisitor.cc
   Inline/InlineASTConsumer.cc
   Inline/InlineAction.cc
