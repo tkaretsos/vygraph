@@ -13,7 +13,11 @@ using clang::tooling::ClangTool;
 
 class Analyzer {
   ClangTool& tool;
-  class FuntionLocator : public MatchFinder::MatchCallback {
+  class FunctionDefLocator : public MatchFinder::MatchCallback {
+    virtual void run(const MatchFinder::MatchResult&);
+  };
+
+  class FunctionCallLocator : public MatchFinder::MatchCallback {
     virtual void run(const MatchFinder::MatchResult&);
   };
 
