@@ -12,6 +12,12 @@ void add(int s) {
   b += a;
 }
 
+void foo() {
+  int a = 2, b = 3;
+  a += 3;
+  b += a;
+}
+
 int main() {
   vy_spawn(sub);
   vy_spawn(add, 5);
@@ -20,5 +26,6 @@ int main() {
   vy_atomic_begin();
   add(5);
   vy_atomic_end();
+  foo();
   return 0;
 }
