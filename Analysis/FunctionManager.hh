@@ -2,16 +2,26 @@
 #define VYGRAPH_FUNCTIONMANAGER_H
 
 #include <map>
+#include <vector>
 
 #include "clang/AST/Decl.h"
 #include "clang/Basic/SourceLocation.h"
 
 namespace vy {
 
+struct CallInfo {
+  CallInfo();
+  CallInfo(clang::SourceLocation&, bool);
+
+  clang::SourceLocation location;
+  bool isSimpleCall;
+};
+
 struct FunctionInfo {
   FunctionInfo();
   FunctionInfo(std::string, bool = true);
 
+  std::vector<CallInfo> calls;
   std::string name;
   bool deleteSource;
 };

@@ -6,6 +6,12 @@ namespace vy {
 
 FunctionManager functionMgr;
 
+CallInfo::CallInfo() { }
+
+CallInfo::CallInfo(clang::SourceLocation& location, bool isSimpleCall)
+  : location(location), isSimpleCall(isSimpleCall)
+{ }
+
 FunctionInfo::FunctionInfo() { }
 
 FunctionInfo::FunctionInfo(std::string name, bool deleteSource)
