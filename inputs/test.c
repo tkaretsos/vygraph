@@ -18,6 +18,10 @@ void foo() {
   b += a;
 }
 
+int ret() {
+  return 0;
+}
+
 int main() {
   vy_spawn(sub);
   vy_spawn(add, 5);
@@ -27,5 +31,7 @@ int main() {
   add(5);
   vy_atomic_end();
   foo();
+  ret();
+  int a = ret();
   return 0;
 }
