@@ -25,8 +25,8 @@ class FunctionManager {
 public:
   FunctionManager();
   void addUserFunction(const clang::FunctionDecl*);
-  bool isUserDefined(std::string&);
-  void setDeleteSource(std::string, bool);
+  bool isUserDefined(const std::string&);
+  void setDeleteSource(const std::string&, bool);
   void print();
 };
 
