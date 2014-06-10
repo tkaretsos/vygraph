@@ -8,16 +8,15 @@ FunctionManager functionMgr;
 
 FunctionInfo::FunctionInfo() { }
 
-FunctionInfo::FunctionInfo(std::string name, clang::SourceLocation location,
-                           bool deleteSource)
-  : name(name), location(location), deleteSource(deleteSource)
+FunctionInfo::FunctionInfo(std::string name, bool deleteSource)
+  : name(name), deleteSource(deleteSource)
 { }
 
 FunctionManager::FunctionManager() { }
 
 void FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
   auto name = decl->getNameAsString();
-  userFunctions_.emplace(name, FunctionInfo(name, decl->getLocStart()));
+  userFunctions_.emplace(name, FunctionInfo(name));
 }
 
 bool FunctionManager::isUserDefined(const std::string& name) {

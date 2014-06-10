@@ -10,10 +10,9 @@ namespace vy {
 
 struct FunctionInfo {
   FunctionInfo();
-  FunctionInfo(std::string, clang::SourceLocation, bool = true);
+  FunctionInfo(std::string, bool = true);
 
   std::string name;
-  clang::SourceLocation location;
   bool deleteSource;
 };
 
