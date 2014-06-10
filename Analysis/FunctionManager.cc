@@ -20,8 +20,12 @@ void FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
   userFunctions_.emplace(name, FunctionInfo(name, decl->getLocStart()));
 }
 
+bool FunctionManager::isUserDefined(std::string& name) {
+  return userFunctions_.find(name) != userFunctions_.end();
+}
+
 void FunctionManager::setDeleteSource(std::string functionName, bool value) {
-  if (userFunctions_.find(functionName) != userFunctions_.end()) {
+  if (isUserDefined(functionName)) {
     userFunctions_[functionName].deleteSource = value;
   }
 }
