@@ -1,8 +1,9 @@
 #ifndef VYGRAPH_FUNCTIONMANAGER_H
 #define VYGRAPH_FUNCTIONMANAGER_H
 
-#include <vector>
+#include <map>
 
+#include "clang/AST/Decl.h"
 #include "clang/Basic/SourceLocation.h"
 
 namespace vy {
@@ -13,20 +14,19 @@ struct FunctionInfo {
 
   std::string name;
   clang::SourceLocation location;
-  bool deleteDeclaration;
+  bool deleteSource;
 };
 
 class FunctionManager {
-  typedef std::vector<FunctionInfo> container;
-  typedef container::const_iterator iterator;
+  typedef std::map<std::string, FunctionInfo> container;
 
   container userFunctions_;
   FunctionManager(const FunctionManager&);
 public:
   FunctionManager();
-  void addUserFunction(const FunctionInfo&);
-  void addUserFunction(const std::string&, const clang::SourceLocation&,
-                       bool = true);
+  void addUserFunction(const clang::FunctionDecl*);
+  void setDeleteSource(std::string, bool);
+  void print();
 };
 
 extern FunctionManager functionMgr;
