@@ -4,13 +4,14 @@
 #include <vector>
 
 #include "clang/AST/Decl.h"
+#include "clang/AST/Expr.h"
 #include "clang/Basic/SourceLocation.h"
 
 namespace vy {
 
 struct CallInfo {
   CallInfo();
-  CallInfo(clang::SourceLocation&, bool);
+  CallInfo(const clang::SourceLocation&, bool);
 
   clang::SourceLocation location;
   bool isSimpleCall;
@@ -37,6 +38,7 @@ public:
   void addUserFunction(const clang::FunctionDecl*);
   bool isUserDefined(const std::string&);
   void setDeleteSource(const std::string&, bool);
+  void addCall(const std::string&, const clang::CallExpr*, bool);
   void print();
 };
 

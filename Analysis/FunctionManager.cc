@@ -9,7 +9,7 @@ FunctionManager functionMgr;
 
 CallInfo::CallInfo() { }
 
-CallInfo::CallInfo(clang::SourceLocation& location, bool isSimpleCall)
+CallInfo::CallInfo(const clang::SourceLocation& location, bool isSimpleCall)
   : location(location), isSimpleCall(isSimpleCall)
 { }
 
@@ -40,6 +40,14 @@ void FunctionManager::setDeleteSource(const std::string& functionName, bool valu
   auto found = find(functionName);
   if (found != userFunctions_.end()) {
     found->deleteSource = value;
+  }
+}
+
+void FunctionManager::addCall(const std::string& name, const clang::CallExpr* expr,
+                              bool isSimpleCall) {
+  container::iterator found = find(name);
+  if (found != userFunctions_.end()) {
+    found->calls.emplace_back(expr->getLocStart(), isSimpleCall);
   }
 }
 
