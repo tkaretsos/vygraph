@@ -1,7 +1,6 @@
 #ifndef VYGRAPH_FUNCTIONMANAGER_H
 #define VYGRAPH_FUNCTIONMANAGER_H
 
-#include <map>
 #include <vector>
 
 #include "clang/AST/Decl.h"
@@ -27,10 +26,12 @@ struct FunctionInfo {
 };
 
 class FunctionManager {
-  typedef std::map<std::string, FunctionInfo> container;
+  typedef std::vector<FunctionInfo> container;
 
   container userFunctions_;
   FunctionManager(const FunctionManager&);
+
+  container::iterator find(const std::string&);
 public:
   FunctionManager();
   void addUserFunction(const clang::FunctionDecl*);

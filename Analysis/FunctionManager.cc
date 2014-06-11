@@ -1,6 +1,7 @@
 #include "FunctionManager.hh"
 
 #include <iostream>
+#include <algorithm>
 
 namespace vy {
 
@@ -20,24 +21,31 @@ FunctionInfo::FunctionInfo(std::string name, bool deleteSource)
 
 FunctionManager::FunctionManager() { }
 
+FunctionManager::container::iterator FunctionManager::find(const std::string& name) {
+  return std::find_if(userFunctions_.begin(),
+                      userFunctions_.end(),
+                      [&](const FunctionInfo& fi) { return fi.name == name; });
+}
+
 void FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
   auto name = decl->getNameAsString();
-  userFunctions_.emplace(name, FunctionInfo(name));
+  userFunctions_.emplace_back(name);
 }
 
 bool FunctionManager::isUserDefined(const std::string& name) {
-  return userFunctions_.find(name) != userFunctions_.end();
+  return find(name) != userFunctions_.end();
 }
 
 void FunctionManager::setDeleteSource(const std::string& functionName, bool value) {
-  if (isUserDefined(functionName)) {
-    userFunctions_[functionName].deleteSource = value;
+  auto found = find(functionName);
+  if (found != userFunctions_.end()) {
+    found->deleteSource = value;
   }
 }
 
 void FunctionManager::print() {
   for (auto i = userFunctions_.begin(); i != userFunctions_.end(); ++i) {
-    std::cout << i->second.name << " " << i->second.deleteSource << std::endl;
+    std::cout << i->name << " " << i->deleteSource << std::endl;
   }
 }
 
