@@ -43,9 +43,8 @@ void FunctionManager::setDeleteSource(const std::string& functionName, bool valu
   }
 }
 
-void FunctionManager::addCall(const std::string& name, const clang::CallExpr* expr,
-                              bool isSimpleCall) {
-  container::iterator found = find(name);
+void FunctionManager::addCall(const clang::CallExpr* expr, bool isSimpleCall) {
+  container::iterator found = find(expr->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
     found->calls.emplace_back(expr->getLocStart(), isSimpleCall);
   }

@@ -38,7 +38,7 @@ public:
   void addUserFunction(const clang::FunctionDecl*);
   bool isUserDefined(const std::string&);
   void setDeleteSource(const std::string&, bool);
-  void addCall(const std::string&, const clang::CallExpr*, bool);
+  void addCall(const clang::CallExpr*, bool);
   void print();
 };
 
