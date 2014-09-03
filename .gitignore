@@ -13,6 +13,7 @@ build
 *.o
 *.vy.c
 *.autosave
+*.kdev4
 
 ############
 # Qt Creator
