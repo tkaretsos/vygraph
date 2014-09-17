@@ -21,6 +21,8 @@ class Analyzer {
     virtual void run(const MatchFinder::MatchResult&);
   };
 
+  static const clang::CallExpr* findCallInStmt(const clang::Stmt* stmt);
+
 public:
   Analyzer(ClangTool&);
   void analyze();

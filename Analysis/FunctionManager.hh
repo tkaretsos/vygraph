@@ -11,10 +11,11 @@ namespace vy {
 
 struct CallInfo {
   CallInfo();
-  CallInfo(const clang::SourceLocation&, bool);
+  CallInfo(unsigned, bool);
 
-  clang::SourceLocation location;
+  unsigned ID;
   bool isSimpleCall;
+  clang::SourceLocation lineStartLoc;
 };
 
 struct FunctionInfo {
@@ -39,6 +40,9 @@ public:
   bool isUserDefined(const std::string&);
   void setDeleteSource(const std::string&, bool);
   void addCall(const clang::CallExpr*, bool);
+  void addCall(const clang::CallExpr*, bool, const clang::SourceLocation&);
+  bool isSimpleCall(const clang::CallExpr*);
+  const clang::SourceLocation& getStmtLoc(clang::CallExpr*);
   void print();
 };
 

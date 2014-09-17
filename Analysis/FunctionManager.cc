@@ -9,8 +9,8 @@ FunctionManager functionMgr;
 
 CallInfo::CallInfo() { }
 
-CallInfo::CallInfo(const clang::SourceLocation& location, bool isSimpleCall)
-  : location(location), isSimpleCall(isSimpleCall)
+CallInfo::CallInfo(unsigned ID, bool isSimpleCall)
+  : ID(ID), isSimpleCall(isSimpleCall)
 { }
 
 FunctionInfo::FunctionInfo() { }
@@ -28,8 +28,7 @@ FunctionManager::container::iterator FunctionManager::find(const std::string& na
 }
 
 void FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
-  auto name = decl->getNameAsString();
-  userFunctions_.emplace_back(name);
+  userFunctions_.emplace_back(decl->getNameAsString());
 }
 
 bool FunctionManager::isUserDefined(const std::string& name) {
@@ -43,11 +42,43 @@ void FunctionManager::setDeleteSource(const std::string& functionName, bool valu
   }
 }
 
-void FunctionManager::addCall(const clang::CallExpr* expr, bool isSimpleCall) {
-  container::iterator found = find(expr->getDirectCallee()->getNameAsString());
+void FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall) {
+  auto found = find(call->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
-    found->calls.emplace_back(expr->getLocStart(), isSimpleCall);
+    found->calls.emplace_back(call->getLocStart().getRawEncoding(), isSimpleCall);
   }
+}
+
+void FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall,
+                              const clang::SourceLocation& lineLoc) {
+  auto found = find(call->getDirectCallee()->getNameAsString());
+  if (found != userFunctions_.end()) {
+    found->calls.emplace_back(call->getLocStart().getRawEncoding(), isSimpleCall);
+    found->calls.back().lineStartLoc = lineLoc;
+  }
+}
+
+bool FunctionManager::isSimpleCall(const clang::CallExpr* call) {
+  auto found = find(call->getDirectCallee()->getNameAsString());
+  if (found != userFunctions_.end()) {
+    for (auto callIt : found->calls) {
+      if (callIt.ID == call->getLocStart().getRawEncoding()) {
+        return callIt.isSimpleCall;
+      }
+    }
+  }
+
+  return false;
+}
+
+const clang::SourceLocation& FunctionManager::getStmtLoc(clang::CallExpr* call) {
+  auto function = find(call->getDirectCallee()->getNameAsString());
+  auto callInfo = std::find_if(function->calls.begin(),
+                               function->calls.end(),
+                               [&](const CallInfo& ci) {
+                                 return call->getLocStart().getRawEncoding() == ci.ID;
+                               });
+  return callInfo->lineStartLoc;
 }
 
 void FunctionManager::print() {

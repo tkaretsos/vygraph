@@ -20,24 +20,26 @@ void Analyzer::analyze() {
   Analyzer::FunctionCallLocator callLocator;
   MatchFinder callFinder;
   auto userFunc = functionDecl(isDefinition());
-  StatementMatcher funcAsArgument = callExpr(hasAnyArgument(declRefExpr(to(userFunc)))
-                                             ).bind("funcAsArgument");
+
+//   StatementMatcher funcAsArgument = callExpr(hasAnyArgument(declRefExpr(to(userFunc)))
+//                                              ).bind("funcAsArgument");
+
   StatementMatcher simpleCall = callExpr(hasParent(compoundStmt()),
                                          hasDeclaration(userFunc)
                                          ).bind("simpleCall");
-  StatementMatcher callInExpr = callExpr(unless(hasParent(compoundStmt())),
-                                         hasDeclaration(userFunc)
-                                         ).bind("callInExpr");
-  callFinder.addMatcher(funcAsArgument, &callLocator);
-  callFinder.addMatcher(simpleCall, &callLocator);
-  callFinder.addMatcher(callInExpr, &callLocator);
-  tool.run(newFrontendActionFactory(&callFinder));
 
-  functionMgr.print();
+  StatementMatcher stmtWithCall = stmt(hasParent(compoundStmt()),
+                                       hasDescendant(callExpr(hasDeclaration(userFunc)))
+                                       ).bind("stmtWithCall");
+
+//   callFinder.addMatcher(funcAsArgument, &callLocator);
+  callFinder.addMatcher(simpleCall, &callLocator);
+  callFinder.addMatcher(stmtWithCall, &callLocator);
+  tool.run(newFrontendActionFactory(&callFinder));
 }
 
 void Analyzer::FunctionDefLocator::run(const MatchFinder::MatchResult& result) {
-  if (const FunctionDecl* function = result.Nodes.getNodeAs<FunctionDecl>("functionDef")) {
+  if (auto function = result.Nodes.getNodeAs<FunctionDecl>("functionDef")) {
     if (!function->isMain()) {
       functionMgr.addUserFunction(function);
     }
@@ -45,23 +47,44 @@ void Analyzer::FunctionDefLocator::run(const MatchFinder::MatchResult& result) {
 }
 
 void Analyzer::FunctionCallLocator::run(const MatchFinder::MatchResult& result) {
-  if (const CallExpr* call = result.Nodes.getNodeAs<CallExpr>("funcAsArgument")) {
-    for (auto i = call->arg_begin(); i != call->arg_end(); ++i) {
-      if (auto impCast = dyn_cast<ImplicitCastExpr>(*i)) {
-        if (auto declRef = dyn_cast<DeclRefExpr>(impCast->getSubExpr())) {
-          functionMgr.setDeleteSource(declRef->getNameInfo().getAsString(), false);
-        }
-      }
-    }
-  }
+//   if (auto call = result.Nodes.getNodeAs<CallExpr>("funcAsArgument")) {
+//     for (auto i = call->arg_begin(); i != call->arg_end(); ++i) {
+//       if (auto impCast = dyn_cast<ImplicitCastExpr>(*i)) {
+//         if (auto declRef = dyn_cast<DeclRefExpr>(impCast->getSubExpr())) {
+//           functionMgr.setDeleteSource(declRef->getNameInfo().getAsString(), false);
+//         }
+//       }
+//     }
+//   }
 
-  if (const CallExpr* call = result.Nodes.getNodeAs<CallExpr>("simpleCall")) {
+  if (auto call = result.Nodes.getNodeAs<CallExpr>("simpleCall")) {
     functionMgr.addCall(call, true);
   }
 
-  if (const CallExpr* call = result.Nodes.getNodeAs<CallExpr>("callInExpr")) {
-    functionMgr.addCall(call, false);
+  if (auto stmt = result.Nodes.getNodeAs<Stmt>("stmtWithCall")) {
+    const CallExpr* call = Analyzer::findCallInStmt(stmt);
+    if (call != nullptr) {
+      functionMgr.addCall(call, false, stmt->getLocStart());
+    }
   }
 }
 
+const clang::CallExpr* Analyzer::findCallInStmt(const Stmt* stmt) {
+
+  CallExpr* call = nullptr;
+  if (call = dyn_cast<CallExpr>(const_cast<Stmt*>(stmt))) {
+    return call;
+  }
+
+  if (!stmt->children().empty()) {
+    for (auto c : stmt->children()) {
+      call = const_cast<CallExpr*>(findCallInStmt(c));
+      if (call != nullptr)
+        break;
+    }
+  }
+
+  return call;
 }
+
+} // namespace vy

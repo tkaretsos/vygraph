@@ -8,8 +8,8 @@ void sub() {
 
 void add(int s) {
   int a = 2, b = 3;
-  a += 3;
-  b += a;
+  a += s;
+  b += s;
 }
 
 void foo() {
@@ -19,7 +19,10 @@ void foo() {
 }
 
 int ret() {
-  return 0;
+  int a = 2, b = 3;
+  a += 3;
+  b += a;
+  return a + 10;
 }
 
 int main() {
@@ -32,6 +35,7 @@ int main() {
   vy_atomic_end();
   foo();
   ret();
-  int a = ret();
+  int a;
+  a = ret() + 5;
   return 0;
 }
