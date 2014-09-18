@@ -1,15 +1,15 @@
 #include "vygraph_lang.h"
 
 void sub() {
-  int a = 2, b = 3;
-  a += 3;
-  b += a;
+  int qq = 2, ww = 3;
+  qq += 3;
+  ww += qq;
 }
 
 void add(int s) {
-  int a = 2, b = 3;
-  a += s;
-  b += s;
+  int ff = 2, gg = 3;
+  ff += ff;
+  gg += ff;
 }
 
 void foo() {
@@ -19,10 +19,10 @@ void foo() {
 }
 
 int ret() {
-  int a = 2, b = 3;
-  a += 3;
-  b += a;
-  return a + 10;
+  int aaa = 2, bbb = 3;
+  aaa += 3;
+  bbb += aaa;
+  return aaa + 10;
 }
 
 int main() {
@@ -35,7 +35,7 @@ int main() {
   vy_atomic_end();
   foo();
   ret();
-  int a;
-  a = ret() + 5;
+  int aa;
+  aa = ret() + 5;
   return 0;
 }
