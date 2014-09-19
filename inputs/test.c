@@ -8,8 +8,8 @@ void sub() {
 
 void add(int s) {
   int ff = 2, gg = 3;
-  ff += ff;
-  gg += ff;
+  ff += s;
+  gg += s;
 }
 
 void foo() {
