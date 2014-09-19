@@ -1,6 +1,7 @@
 #include "InlineASTVisitor.hh"
 
 #include <iostream>
+#include <map>
 #include "../Analysis/FunctionManager.hh"
 
 namespace vy {
@@ -21,6 +22,10 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
       } else {
         handleNoArgs(call);
       }
+    } else {
+      if (functionMgr.isSimpleCall(call)) {
+        handleSimpleCallWithArgs(call);
+      }
     }
   }
 
@@ -36,13 +41,13 @@ void InlineASTVisitor::handleSimpleCallNoArgs(clang::CallExpr* call) const {
 
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
-  rewriter.RemoveText(call->getLocStart(), 1); // the semicolon
+  rewriter.RemoveText(call->getLocStart(), 1); // the semicolon and the new line
 
-  for (auto i = funcBody->body_begin(); i != funcBody->body_end(); i++) {
-    if (!isa<ReturnStmt>(*i)) {
+  for (auto s = funcBody->body_begin(); s != funcBody->body_end(); s++) {
+    if (!isa<ReturnStmt>(*s)) {
       rewriter.InsertText(call->getLocStart(),
-                          rewriter.ConvertToString(*i), true, true);
-      if (isa<Expr>(*i)) {
+                          rewriter.ConvertToString(*s), true, true);
+      if (isa<Expr>(*s)) {
         rewriter.InsertText(call->getLocStart(), ";\n", true, true);
       }
     }
@@ -59,15 +64,15 @@ void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
   auto startLoc = functionMgr.getStmtLoc(call);
   auto retType = call->getCallReturnType();
 
-  for (auto i = funcBody->body_begin(); i != funcBody->body_end(); i++) {
-    if (!isa<ReturnStmt>(*i)) {
+  for (auto s = funcBody->body_begin(); s != funcBody->body_end(); s++) {
+    if (!isa<ReturnStmt>(*s)) {
       rewriter.InsertText(startLoc,
-                          rewriter.ConvertToString(*i), true, true);
-      if (isa<Expr>(*i)) {
+                          rewriter.ConvertToString(*s), true, true);
+      if (isa<Expr>(*s)) {
         rewriter.InsertText(startLoc, ";\n", true, true);
       }
     } else {
-      auto retStmt = cast<ReturnStmt>(*i);
+      auto retStmt = cast<ReturnStmt>(*s);
       auto retVal = rewriter.ConvertToString(*retStmt->children().first);
       string newStr("");
       newStr += retType.getAsString() + " ";
@@ -77,6 +82,63 @@ void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
     }
   }
   rewriter.ReplaceText(call->getSourceRange(), varName);
+}
+
+void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
+  map<string, Expr*> varMap;
+  map<Stmt*, string> rollbacks;
+
+  // delete the call text
+  rewriter.RemoveText(call->getSourceRange());
+  rewriter.RemoveText(call->getLocStart(), 1); // the semicolon and the new line
+
+  auto param = call->getDirectCallee()->param_begin();
+  for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
+    varMap[(*param)->getNameAsString()] = *arg;
+  }
+
+  CompoundStmt* funcBody = cast<CompoundStmt>(call->getDirectCallee()->getBody());
+  for (auto s = funcBody->body_begin(); s != funcBody->body_end(); ++s) {
+    rollbacks[*s] = rewriter.ConvertToString(*s);
+    if (isa<ReturnStmt>(*s)) {
+      rollbacks[*s].erase(rollbacks[*s].end() - 2, rollbacks[*s].end());
+    } else {
+      rollbacks[*s].pop_back();
+    }
+    vector<DeclRefExpr*> declRefs;
+    findRefInStmt(*s, declRefs);
+    for (auto declRef : declRefs) {
+      auto found = varMap.find(declRef->getFoundDecl()->getNameAsString());
+      if (found != varMap.end()) {
+        rewriter.ReplaceText(declRef->getSourceRange(),
+                             rewriter.ConvertToString(found->second));
+      }
+    }
+
+    if (!isa<ReturnStmt>(*s)) {
+      string newText(rewriter.getRewrittenText((*s)->getSourceRange()));
+      if (isa<Expr>(*s)) {
+        newText.push_back(';');
+      }
+      newText.push_back('\n');
+      rewriter.InsertText(call->getLocStart(), newText, true, true);
+    }
+  }
+
+  for (auto r : rollbacks) {
+    rewriter.ReplaceText(r.first->getSourceRange(), r.second);
+  }
+}
+
+void InlineASTVisitor::findRefInStmt(Stmt* stmt, vector<DeclRefExpr*>& declRefs) const {
+
+  if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt)) {
+    declRefs.push_back(ref);
+  }
+
+  for (auto c : stmt->children()) {
+    findRefInStmt(c, declRefs);
+  }
 }
 
 
