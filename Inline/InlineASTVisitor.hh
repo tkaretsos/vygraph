@@ -16,6 +16,7 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
   void handleSimpleCallNoArgs(clang::CallExpr*) const;
   void handleNoArgs(clang::CallExpr*) const;
   void handleSimpleCallWithArgs(clang::CallExpr*) const;
+  void handleArgs(clang::CallExpr*) const;
 
   void findRefInStmt(clang::Stmt*, std::vector<clang::DeclRefExpr*>&) const;
 
