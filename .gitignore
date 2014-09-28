@@ -14,6 +14,7 @@ build
 *.vy.c
 *.autosave
 *.kdev4
+*.kate-swp
 
 ############
 # Qt Creator
