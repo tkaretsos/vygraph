@@ -5,6 +5,7 @@
 
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+#include "../Utility/ClangBaseWrapper.hh"
 
 namespace vy {
 
@@ -19,6 +20,7 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
   void handleArgs(clang::CallExpr*) const;
 
   void findRefInStmt(clang::Stmt*, std::vector<clang::DeclRefExpr*>&) const;
+  void findSubstitutions(clang::Stmt*, std::vector<util::ClangBaseWrapper>&) const;
 
   std::string random_alphanum(size_t = 3) const;
 
