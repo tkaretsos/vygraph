@@ -112,17 +112,34 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
 void InlineASTVisitor::handleArgs(CallExpr* call) const {
   string callReplacement;
 
+  map<string, string> paramMap;
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
+    string varName((*param)->getNameAsString() + "_" + random_alphanum());
     string insertStr((*param)->getOriginalType().getAsString() + " ");
-    insertStr.append((*param)->getNameAsString() + " = ");
+    insertStr.append(varName + " = ");
     insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
     rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
+    paramMap[(*param)->getNameAsString()] = varName;
   }
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr = rewriter.ConvertToString((*s));
+
+    vector<DeclRefExpr*> declRefs;
+    findRefInStmt(*s, declRefs);
+    reverse(declRefs.begin(), declRefs.end());
+    for (auto declRef : declRefs) {
+      auto found = paramMap.find(declRef->getNameInfo().getAsString());
+      if (found != paramMap.end()) {
+        auto offset = declRef->getLocStart().getRawEncoding() -
+                      (*s)->getLocStart().getRawEncoding();
+        auto begin = insertStr.begin() + offset;
+        insertStr.replace(begin, begin + found->first.length(), found->second);
+      }
+    }
+
     if (isa<ReturnStmt>(*s)) {
       callReplacement.push_back('(');
       callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
@@ -140,7 +157,8 @@ void InlineASTVisitor::findRefInStmt(Stmt* stmt, vector<DeclRefExpr*>& declRefs)
   if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt))
     declRefs.push_back(ref);
   for (auto c : stmt->children())
-    findRefInStmt(c, declRefs);
+    if (c != nullptr)
+      findRefInStmt(c, declRefs);
 }
 
 string InlineASTVisitor::random_alphanum(size_t length) const {
