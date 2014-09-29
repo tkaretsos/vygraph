@@ -2,6 +2,7 @@
 int foo() {
   int x_foo = 3;
   int y_foo = 5;
+  x_foo += 3 * y_foo;
   return 4 + x_foo + y_foo;
 }
 
@@ -17,12 +18,6 @@ int main() {
   // 1
   x = 3 * foo() + 4;
   // 2
-  foo();
-  // 3
-  foo();
-  // 4
-  bar();
-  // 5
   float z = 5.2 + bar();
 
   return 0;

@@ -1,11 +1,31 @@
+#include <stdio.h>
 
 void foo(int x_foo, int y_foo) {
   int z_foo = x_foo * y_foo + 3;
   z_foo = x_foo + 5 - y_foo + 3;
   z_foo = x_foo + 2 * y_foo;
-  z_foo = x_foo + y_foo;
-  z_foo = x_foo + y_foo;
-  return;
+  if (z_foo == x_foo) {
+    z_foo = x_foo + y_foo;
+    z_foo--;
+  }else{
+    z_foo++;
+    printf("%d\n", z_foo);
+  }
+  for (int i = 0; i < 5; ++i) {
+    z_foo += i;
+  }
+//   int j = 0;
+//   while (j < 5)
+//   {
+//     z_foo -= j;
+//     j++;
+//   }
+//   int k = 0;
+//   do {
+//     z_foo += k;
+//     k++;
+//   } while (k < 6);
+  z_foo++;
 }
 
 void bar(float x_bar, float y_bar) {

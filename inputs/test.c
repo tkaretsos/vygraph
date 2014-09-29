@@ -1,28 +1,29 @@
 #include "vygraph_lang.h"
 
 void sub() {
-  int qq = 2, ww = 3;
-  qq += 3;
-  ww += qq;
+  int x_sub = 2, y_sub = 3;
+  x_sub += 3;
+  y_sub += x_sub;
 }
 
-void add(int s) {
-  int ff = 2, gg = 3;
-  ff += s;
-  gg += s;
+void add(int x_add) {
+  int y_add = 2, z_add = 3;
+  y_add += x_add;
+  z_add += x_add;
 }
 
 void foo() {
-  int a = 2, b = 3;
-  a += 3;
-  b += a;
+  int x_foo = 2, y_foo = 3;
+  x_foo += 3;
+  y_foo += x_foo;
 }
 
-int ret() {
-  int aaa = 2, bbb = 3;
-  aaa += 3;
-  bbb += aaa;
-  return aaa + 10;
+int ret(int x_ret) {
+  int y_ret = 3;
+  x_ret = 2;
+  x_ret += 3;
+  y_ret += x_ret;
+  return x_ret + 10;
 }
 
 int main() {
@@ -34,8 +35,7 @@ int main() {
   add(5);
   vy_atomic_end();
   foo();
-  ret();
-  int aa;
-  aa = ret() + 5;
+  int x;
+  x = ret(x + 4) + 5;
   return 0;
 }
