@@ -164,14 +164,23 @@ void InlineASTVisitor::handleArgs(CallExpr* call) const {
   rewriter.ReplaceText(call->getSourceRange(), callReplacement);
 }
 
-
 void InlineASTVisitor::findRefInStmt(Stmt* stmt, vector<DeclRefExpr*>& declRefs) const {
   if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt))
     declRefs.push_back(ref);
-
   for (auto c : stmt->children())
     findRefInStmt(c, declRefs);
 }
+
+string InlineASTVisitor::random_alphanum(size_t length) const {
+  const char charset[] = "0123456789"
+                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                         "abcdefghijklmnopqrstuvwxyz";
+  string str(length, 0);
+  auto randchar = [&]() { return charset[rand() % (sizeof(charset) - 1)]; };
+  generate_n(str.begin(), length, randchar);
+  return str;
+}
+
 
 
 } // namespace vy

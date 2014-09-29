@@ -20,6 +20,8 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
 
   void findRefInStmt(clang::Stmt*, std::vector<clang::DeclRefExpr*>&) const;
 
+  std::string random_alphanum(size_t = 3) const;
+
 public:
   InlineASTVisitor(clang::Rewriter&, clang::ASTContext&);
   bool VisitCallExpr(clang::CallExpr*);
