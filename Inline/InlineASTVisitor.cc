@@ -39,21 +39,19 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 // *code* ...
 // foo();
 // *code* ...
-void InlineASTVisitor::handleSimpleCallNoArgs(clang::CallExpr* call) const {
-  CompoundStmt* funcBody = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-
+void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1); // the semicolon and the new line
 
-  for (auto s = funcBody->body_begin(); s != funcBody->body_end(); s++) {
-    if (!isa<ReturnStmt>(*s)) {
-      rewriter.InsertText(call->getLocStart(),
-                          rewriter.ConvertToString(*s), true, true);
-      if (isa<Expr>(*s)) {
-        rewriter.InsertText(call->getLocStart(), ";\n", true, true);
-      }
-    }
+  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
+  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
+    if (isa<ReturnStmt>(*s))
+      continue;
+    string insertStr = rewriter.ConvertToString((*s));
+    if (isa<Expr>(*s))
+      insertStr.append(";\n");
+    rewriter.InsertText(call->getLocStart(), insertStr, true, true);
   }
 }
 
@@ -62,29 +60,21 @@ void InlineASTVisitor::handleSimpleCallNoArgs(clang::CallExpr* call) const {
 // x = <expr> <operator> foo() <operator> <expr>;
 // *code* ...
 void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
-  CompoundStmt* funcBody = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-  string varName(call->getDirectCallee()->getNameAsString() + "_retval");
-  auto startLoc = functionMgr.getStmtLoc(call);
-  auto retType = call->getCallReturnType();
+  string callReplacement("(");
 
-  for (auto s = funcBody->body_begin(); s != funcBody->body_end(); s++) {
-    if (!isa<ReturnStmt>(*s)) {
-      rewriter.InsertText(startLoc,
-                          rewriter.ConvertToString(*s), true, true);
-      if (isa<Expr>(*s)) {
-        rewriter.InsertText(startLoc, ";\n", true, true);
-      }
+  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
+  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
+    string insertStr = rewriter.ConvertToString(*s);
+    if (isa<ReturnStmt>(*s)) {
+      callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
+      callReplacement.push_back(')');
     } else {
-      auto retStmt = cast<ReturnStmt>(*s);
-      auto retVal = rewriter.ConvertToString(*retStmt->children().first);
-      string newStr("");
-      newStr += retType.getAsString() + " ";
-      newStr += varName + " = ";
-      newStr += retVal + ";\n";
-      rewriter.InsertText(startLoc, newStr, true, true);
+      if (isa<Expr>(*s))
+        insertStr.append(";\n");
+      rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
     }
   }
-  rewriter.ReplaceText(call->getSourceRange(), varName);
+  rewriter.ReplaceText(call->getSourceRange(), callReplacement);
 }
 
 // eg: void foo(<type> param1, ...) { ... return <expr>; }
@@ -92,9 +82,9 @@ void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
 // foo(arg1, ...);
 // *code* ...
 void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
-
+  // delete the call text
   rewriter.RemoveText(call->getSourceRange());
-  rewriter.RemoveText(call->getLocStart(), 1); // the semicolon and the new line
+  rewriter.RemoveText(call->getLocStart(), 1);
 
   // create a map between the parameters of the function
   // and the arguments of the call
@@ -106,9 +96,9 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
-    if (isa<ReturnStmt>(*s)) {
+    if (isa<ReturnStmt>(*s))
       continue;
-    }
+
     string insertStr = rewriter.ConvertToString((*s));
     vector<DeclRefExpr*> declRefs;
     findRefInStmt(*s, declRefs);
