@@ -18,17 +18,15 @@ InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
 bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
   if (functionMgr.isUserDefined(call->getDirectCallee()->getNameAsString())) {
     if (call->getNumArgs() == 0) {
-      if (functionMgr.isSimpleCall(call)) {
+      if (functionMgr.isSimpleCall(call))
         handleSimpleCallNoArgs(call);
-      } else {
+      else
         handleNoArgs(call);
-      }
     } else {
-      if (functionMgr.isSimpleCall(call)) {
+      if (functionMgr.isSimpleCall(call))
         handleSimpleCallWithArgs(call);
-      } else {
+      else
         handleArgs(call);
-      }
     }
   }
 
@@ -60,12 +58,13 @@ void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call) const {
 // x = <expr> <operator> foo() <operator> <expr>;
 // *code* ...
 void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
-  string callReplacement("(");
+  string callReplacement;
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr = rewriter.ConvertToString(*s);
     if (isa<ReturnStmt>(*s)) {
+      callReplacement.push_back('(');
       callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
       callReplacement.push_back(')');
     } else {
@@ -86,12 +85,12 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
 
-  // create a map between the parameters of the function
-  // and the arguments of the call
-  map<string, Expr*> varMap;
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
-    varMap[(*param)->getNameAsString()] = *arg;
+    string insertStr((*param)->getOriginalType().getAsString() + " ");
+    insertStr.append((*param)->getNameAsString() + " = ");
+    insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
+    rewriter.InsertText(call->getLocStart(), insertStr, true, true);
   }
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
@@ -100,20 +99,6 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
       continue;
 
     string insertStr = rewriter.ConvertToString((*s));
-    vector<DeclRefExpr*> declRefs;
-    findRefInStmt(*s, declRefs);
-    reverse(declRefs.begin(), declRefs.end());
-    for (auto declRef : declRefs) {
-      auto found = varMap.find(declRef->getFoundDecl()->getNameAsString());
-      if (found != varMap.end()) {
-        auto offset = declRef->getLocStart().getRawEncoding() -
-                      (*s)->getLocStart().getRawEncoding();
-        auto begin = insertStr.begin() + offset;
-        string exprStr("(" + rewriter.ConvertToString(found->second) + ")");
-        insertStr.replace(begin, begin + found->first.length(), exprStr);
-      }
-    }
-
     if (isa<Expr>(*s))
       insertStr.append(";\n");
     rewriter.InsertText(call->getLocStart(), insertStr, true, true);
@@ -125,34 +110,21 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
 // x = <expr> <operator> foo(arg1, ...) <operator> <expr>;
 // *code* ...
 void InlineASTVisitor::handleArgs(CallExpr* call) const {
-  string callReplacement("(");
+  string callReplacement;
 
-  // create a map between the parameters of the function
-  // and the arguments of the call
-  map<string, Expr*> varMap;
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
-    varMap[(*param)->getNameAsString()] = *arg;
+    string insertStr((*param)->getOriginalType().getAsString() + " ");
+    insertStr.append((*param)->getNameAsString() + " = ");
+    insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
+    rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
   }
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr = rewriter.ConvertToString((*s));
-    vector<DeclRefExpr*> declRefs;
-    findRefInStmt(*s, declRefs);
-    reverse(declRefs.begin(), declRefs.end());
-    for (auto declRef : declRefs) {
-      auto found = varMap.find(declRef->getFoundDecl()->getNameAsString());
-      if (found != varMap.end()) {
-        auto offset = declRef->getLocStart().getRawEncoding() -
-                      (*s)->getLocStart().getRawEncoding();
-        auto begin = insertStr.begin() + offset;
-        string exprStr("(" + rewriter.ConvertToString(found->second) + ")");
-        insertStr.replace(begin, begin + found->first.length(), exprStr);
-      }
-    }
-
     if (isa<ReturnStmt>(*s)) {
+      callReplacement.push_back('(');
       callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
       callReplacement.push_back(')');
     } else {
