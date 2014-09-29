@@ -40,13 +40,31 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
-  rewriter.RemoveText(call->getLocStart(), 1); // the semicolon and the new line
+  rewriter.RemoveText(call->getLocStart(), 1);
+
+  auto subMap(functionMgr.getVarSubs(call));
+  for (auto& i : subMap)
+    i.second = i.first + "_" + random_alphanum();
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     if (isa<ReturnStmt>(*s))
       continue;
     string insertStr = rewriter.ConvertToString((*s));
+
+    vector<util::ClangBaseWrapper> subs;
+    findSubstitutions(*s, subs);
+    reverse(subs.begin(), subs.end());
+    for (auto& sub : subs) {
+      auto found = subMap.find(sub.getAsString(rewriter));
+      if (found != subMap.end()) {
+        auto offset = sub.getLocStart().getRawEncoding() -
+                      (*s)->getLocStart().getRawEncoding();
+        auto begin = insertStr.begin() + offset;
+        insertStr.replace(begin, begin + found->first.length(), found->second);
+      }
+    }
+
     if (isa<Expr>(*s))
       insertStr.append(";\n");
     rewriter.InsertText(call->getLocStart(), insertStr, true, true);
@@ -60,9 +78,27 @@ void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call) const {
 void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
   string callReplacement;
 
+  auto subMap(functionMgr.getVarSubs(call));
+  for (auto& i : subMap)
+    i.second = i.first + "_" + random_alphanum();
+
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr = rewriter.ConvertToString(*s);
+
+    vector<util::ClangBaseWrapper> subs;
+    findSubstitutions(*s, subs);
+    reverse(subs.begin(), subs.end());
+    for (auto& sub : subs) {
+      auto found = subMap.find(sub.getAsString(rewriter));
+      if (found != subMap.end()) {
+        auto offset = sub.getLocStart().getRawEncoding() -
+                      (*s)->getLocStart().getRawEncoding();
+        auto begin = insertStr.begin() + offset;
+        insertStr.replace(begin, begin + found->first.length(), found->second);
+      }
+    }
+
     if (isa<ReturnStmt>(*s)) {
       callReplacement.push_back('(');
       callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
