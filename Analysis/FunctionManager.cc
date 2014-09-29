@@ -5,6 +5,8 @@
 
 namespace vy {
 
+using namespace clang;
+
 FunctionManager functionMgr;
 
 CallInfo::CallInfo() { }
@@ -15,9 +17,29 @@ CallInfo::CallInfo(unsigned ID, bool isSimpleCall)
 
 FunctionInfo::FunctionInfo() { }
 
-FunctionInfo::FunctionInfo(std::string name, bool deleteSource)
-  : name(name), deleteSource(deleteSource)
-{ }
+FunctionInfo::FunctionInfo(const FunctionDecl* decl, bool deleteSource) :
+  name(decl->getNameAsString()), deleteSource(deleteSource) {
+
+  for (auto p = decl->param_begin(); p != decl->param_end(); ++p)
+    varSubs[(*p)->getNameAsString()] = (*p)->getNameAsString();
+
+  auto body = cast<CompoundStmt>(decl->getBody());
+  for (auto s = body->body_begin(); s != body->body_end(); ++s)
+    findDeclarations(*s);
+}
+
+void FunctionInfo::findDeclarations(Stmt* stmt) {
+  if (DeclStmt* declStmt = dyn_cast<DeclStmt>(stmt)) {
+    for (auto d = declStmt->decl_begin(); d != declStmt->decl_end(); ++d)
+      if (VarDecl* varDecl = dyn_cast<VarDecl>(*d))
+        varSubs[varDecl->getNameAsString()] = varDecl->getNameAsString();
+  }
+
+  for (auto c : stmt->children())
+    if (c != nullptr)
+      findDeclarations(c);
+}
+
 
 FunctionManager::FunctionManager() { }
 
@@ -28,7 +50,7 @@ FunctionManager::container::iterator FunctionManager::find(const std::string& na
 }
 
 void FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
-  userFunctions_.emplace_back(decl->getNameAsString());
+  userFunctions_.emplace_back(decl);
 }
 
 bool FunctionManager::isUserDefined(const std::string& name) {
@@ -80,6 +102,12 @@ const clang::SourceLocation& FunctionManager::getStmtLoc(clang::CallExpr* call) 
                                });
   return callInfo->lineStartLoc;
 }
+
+std::map<std::string, std::string> FunctionManager::getVarSubs(CallExpr* call) {
+  auto function = find(call->getDirectCallee()->getNameAsString());
+  return function->varSubs;
+}
+
 
 void FunctionManager::print() {
   for (auto i = userFunctions_.begin(); i != userFunctions_.end(); ++i) {

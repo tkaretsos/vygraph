@@ -2,6 +2,7 @@
 #define VYGRAPH_FUNCTIONMANAGER_H
 
 #include <vector>
+#include <map>
 
 #include "clang/AST/Decl.h"
 #include "clang/AST/Expr.h"
@@ -20,11 +21,15 @@ struct CallInfo {
 
 struct FunctionInfo {
   FunctionInfo();
-  FunctionInfo(std::string, bool = true);
+  FunctionInfo(const clang::FunctionDecl*, bool = true);
 
   std::vector<CallInfo> calls;
   std::string name;
   bool deleteSource;
+  std::map<std::string, std::string> varSubs;
+
+private:
+  void findDeclarations(clang::Stmt*);
 };
 
 class FunctionManager {
@@ -43,6 +48,7 @@ public:
   void addCall(const clang::CallExpr*, bool, const clang::SourceLocation&);
   bool isSimpleCall(const clang::CallExpr*);
   const clang::SourceLocation& getStmtLoc(clang::CallExpr*);
+  std::map<std::string, std::string> getVarSubs(clang::CallExpr*);
   void print();
 };
 
