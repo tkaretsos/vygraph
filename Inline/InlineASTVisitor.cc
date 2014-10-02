@@ -17,9 +17,10 @@ InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
 bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
   if (functionMgr.isUserDefined(call->getDirectCallee()->getNameAsString())) {
 
+    string ext(random_alphanum());
     auto subMap(functionMgr.getVarSubs(call));
     for (auto& i : subMap)
-      i.second = i.first + "_" + random_alphanum();
+      i.second = i.first + "_" + ext;
 
     if (call->getNumArgs() == 0) {
       if (functionMgr.isSimpleCall(call))

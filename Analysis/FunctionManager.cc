@@ -103,7 +103,7 @@ const clang::SourceLocation& FunctionManager::getStmtLoc(clang::CallExpr* call) 
   return callInfo->lineStartLoc;
 }
 
-std::map<std::string, std::string> FunctionManager::getVarSubs(CallExpr* call) {
+const std::map<std::string, std::string>& FunctionManager::getVarSubs(CallExpr* call) {
   auto function = find(call->getDirectCallee()->getNameAsString());
   return function->varSubs;
 }

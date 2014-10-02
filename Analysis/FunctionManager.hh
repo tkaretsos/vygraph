@@ -48,7 +48,7 @@ public:
   void addCall(const clang::CallExpr*, bool, const clang::SourceLocation&);
   bool isSimpleCall(const clang::CallExpr*);
   const clang::SourceLocation& getStmtLoc(clang::CallExpr*);
-  std::map<std::string, std::string> getVarSubs(clang::CallExpr*);
+  const std::map<std::string, std::string>& getVarSubs(clang::CallExpr*);
   void print();
 };
 
