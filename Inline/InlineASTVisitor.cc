@@ -14,7 +14,8 @@ InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
   opts.RemoveLineIfEmpty = true;
 }
 
-bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
+bool
+InlineASTVisitor::VisitCallExpr(CallExpr* call) {
   if (functionMgr.isUserDefined(call->getDirectCallee()->getNameAsString())) {
 
     string ext(random_alphanum());
@@ -42,8 +43,9 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 // *code* ...
 // foo();
 // *code* ...
-void InlineASTVisitor::noArgsNoRet(CallExpr* call,
-                                   const map<string, string>& subMap) const {
+void
+InlineASTVisitor::noArgsNoRet(CallExpr* call,
+                              const map<string, string>& subMap) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
@@ -64,8 +66,9 @@ void InlineASTVisitor::noArgsNoRet(CallExpr* call,
 // *code* ...
 // x = <expr> <operator> foo() <operator> <expr>;
 // *code* ...
-void InlineASTVisitor::noArgsWithRet(CallExpr* call,
-                                     const map<string, string>& subMap) const {
+void
+InlineASTVisitor::noArgsWithRet(CallExpr* call,
+                                const map<string, string>& subMap) const {
   string callReplacement;
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
@@ -89,8 +92,9 @@ void InlineASTVisitor::noArgsWithRet(CallExpr* call,
 // *code* ...
 // foo(arg1, ...);
 // *code* ...
-void InlineASTVisitor::argsNoRet(CallExpr* call,
-                                 const map<string, string>& subMap) const {
+void
+InlineASTVisitor::argsNoRet(CallExpr* call,
+                            const map<string, string>& subMap) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
@@ -119,8 +123,9 @@ void InlineASTVisitor::argsNoRet(CallExpr* call,
 // *code* ...
 // x = <expr> <operator> foo(arg1, ...) <operator> <expr>;
 // *code* ...
-void InlineASTVisitor::argsWithRet(CallExpr* call,
-                                   const map<string, string>& subMap) const {
+void
+InlineASTVisitor::argsWithRet(CallExpr* call,
+                              const map<string, string>& subMap) const {
   string callReplacement;
 
   auto param = call->getDirectCallee()->param_begin();
@@ -149,8 +154,9 @@ void InlineASTVisitor::argsWithRet(CallExpr* call,
   rewriter.ReplaceText(call->getSourceRange(), callReplacement);
 }
 
-void InlineASTVisitor::findSubstitutions(Stmt* stmt,
-                                         vector<util::ClangBaseWrapper>& v) const {
+void
+InlineASTVisitor::findSubstitutions(Stmt* stmt,
+                                    vector<util::ClangBaseWrapper>& v) const {
   if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt))
     v.emplace_back(ref);
   if (DeclStmt* decl = dyn_cast<DeclStmt>(stmt)) {
@@ -164,8 +170,9 @@ void InlineASTVisitor::findSubstitutions(Stmt* stmt,
   }
 }
 
-void InlineASTVisitor::replaceVarsInString(Stmt* stmt, string& str,
-                                           const map<string, string>& subMap) const {
+void
+InlineASTVisitor::replaceVarsInString(Stmt* stmt, string& str,
+                                      const map<string, string>& subMap) const {
 
   vector<util::ClangBaseWrapper> subs;
   findSubstitutions(stmt, subs);
@@ -182,7 +189,8 @@ void InlineASTVisitor::replaceVarsInString(Stmt* stmt, string& str,
 }
 
 
-string InlineASTVisitor::random_alphanum(size_t length) const {
+string
+InlineASTVisitor::random_alphanum(size_t length) const {
   const char charset[] = "0123456789"
                          "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                          "abcdefghijklmnopqrstuvwxyz";
@@ -191,7 +199,5 @@ string InlineASTVisitor::random_alphanum(size_t length) const {
   generate_n(str.begin(), length, randchar);
   return str;
 }
-
-
 
 } // namespace vy

@@ -10,13 +10,15 @@ using namespace clang;
 
 InlineAction::InlineAction() { }
 
-ASTConsumer* InlineAction::CreateASTConsumer(CompilerInstance& CI,
+ASTConsumer*
+InlineAction::CreateASTConsumer(CompilerInstance& CI,
                                              llvm::StringRef file) {
   rewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
   return new InlineASTConsumer(rewriter, CI.getASTContext());
 }
 
-void InlineAction::EndSourceFileAction() {
+void
+InlineAction::EndSourceFileAction() {
   SourceManager& SM = rewriter.getSourceMgr();
   std::string filename = SM.getFileEntryForID(SM.getMainFileID())->getName();
   size_t found = filename.find_last_of('.');

@@ -28,7 +28,8 @@ FunctionInfo::FunctionInfo(const FunctionDecl* decl, bool deleteSource) :
     findDeclarations(*s);
 }
 
-void FunctionInfo::findDeclarations(Stmt* stmt) {
+void
+FunctionInfo::findDeclarations(Stmt* stmt) {
   if (DeclStmt* declStmt = dyn_cast<DeclStmt>(stmt)) {
     for (auto d = declStmt->decl_begin(); d != declStmt->decl_end(); ++d)
       if (VarDecl* varDecl = dyn_cast<VarDecl>(*d))
@@ -43,35 +44,41 @@ void FunctionInfo::findDeclarations(Stmt* stmt) {
 
 FunctionManager::FunctionManager() { }
 
-FunctionManager::container::iterator FunctionManager::find(const std::string& name) {
+FunctionManager::container::iterator
+FunctionManager::find(const std::string& name) {
   return std::find_if(userFunctions_.begin(),
                       userFunctions_.end(),
                       [&](const FunctionInfo& fi) { return fi.name == name; });
 }
 
-void FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
+void
+FunctionManager::addUserFunction(const clang::FunctionDecl* decl) {
   userFunctions_.emplace_back(decl);
 }
 
-bool FunctionManager::isUserDefined(const std::string& name) {
+bool
+FunctionManager::isUserDefined(const std::string& name) {
   return find(name) != userFunctions_.end();
 }
 
-void FunctionManager::setDeleteSource(const std::string& functionName, bool value) {
+void
+FunctionManager::setDeleteSource(const std::string& functionName, bool value) {
   auto found = find(functionName);
   if (found != userFunctions_.end()) {
     found->deleteSource = value;
   }
 }
 
-void FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall) {
+void
+FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall) {
   auto found = find(call->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
     found->calls.emplace_back(call->getLocStart().getRawEncoding(), isSimpleCall);
   }
 }
 
-void FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall,
+void
+FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall,
                               const clang::SourceLocation& lineLoc) {
   auto found = find(call->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
@@ -80,7 +87,8 @@ void FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall,
   }
 }
 
-bool FunctionManager::isSimpleCall(const clang::CallExpr* call) {
+bool
+FunctionManager::isSimpleCall(const clang::CallExpr* call) {
   auto found = find(call->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
     for (auto callIt : found->calls) {
@@ -93,7 +101,8 @@ bool FunctionManager::isSimpleCall(const clang::CallExpr* call) {
   return false;
 }
 
-const clang::SourceLocation& FunctionManager::getStmtLoc(clang::CallExpr* call) {
+const clang::SourceLocation&
+FunctionManager::getStmtLoc(clang::CallExpr* call) {
   auto function = find(call->getDirectCallee()->getNameAsString());
   auto callInfo = std::find_if(function->calls.begin(),
                                function->calls.end(),
@@ -103,13 +112,14 @@ const clang::SourceLocation& FunctionManager::getStmtLoc(clang::CallExpr* call) 
   return callInfo->lineStartLoc;
 }
 
-const std::map<std::string, std::string>& FunctionManager::getVarSubs(CallExpr* call) {
+const std::map<std::string, std::string>&
+FunctionManager::getVarSubs(CallExpr* call) {
   auto function = find(call->getDirectCallee()->getNameAsString());
   return function->varSubs;
 }
 
-
-void FunctionManager::print() {
+void
+FunctionManager::print() {
   for (auto i = userFunctions_.begin(); i != userFunctions_.end(); ++i) {
     std::cout << i->name << " " << i->deleteSource << std::endl;
   }
