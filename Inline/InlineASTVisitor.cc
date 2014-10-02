@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <algorithm>
-#include <map>
 #include "../Analysis/FunctionManager.hh"
 
 namespace vy {
@@ -17,16 +16,21 @@ InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
 
 bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
   if (functionMgr.isUserDefined(call->getDirectCallee()->getNameAsString())) {
+
+    auto subMap(functionMgr.getVarSubs(call));
+    for (auto& i : subMap)
+      i.second = i.first + "_" + random_alphanum();
+
     if (call->getNumArgs() == 0) {
       if (functionMgr.isSimpleCall(call))
-        handleSimpleCallNoArgs(call);
+        handleSimpleCallNoArgs(call, subMap);
       else
-        handleNoArgs(call);
+        handleNoArgs(call, subMap);
     } else {
       if (functionMgr.isSimpleCall(call))
-        handleSimpleCallWithArgs(call);
+        handleSimpleCallWithArgs(call, subMap);
       else
-        handleArgs(call);
+        handleArgs(call, subMap);
     }
   }
 
@@ -37,14 +41,11 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 // *code* ...
 // foo();
 // *code* ...
-void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call) const {
+void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call,
+                                              const map<string, string>& subMap) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
-
-  auto subMap(functionMgr.getVarSubs(call));
-  for (auto& i : subMap)
-    i.second = i.first + "_" + random_alphanum();
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
@@ -75,12 +76,9 @@ void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call) const {
 // *code* ...
 // x = <expr> <operator> foo() <operator> <expr>;
 // *code* ...
-void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
+void InlineASTVisitor::handleNoArgs(CallExpr* call,
+                                    const map<string, string>& subMap) const {
   string callReplacement;
-
-  auto subMap(functionMgr.getVarSubs(call));
-  for (auto& i : subMap)
-    i.second = i.first + "_" + random_alphanum();
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
@@ -116,19 +114,16 @@ void InlineASTVisitor::handleNoArgs(CallExpr* call) const {
 // *code* ...
 // foo(arg1, ...);
 // *code* ...
-void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
+void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call,
+                                                const map<string, string>& subMap) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
 
-  auto subMap(functionMgr.getVarSubs(call));
-  for (auto& i : subMap)
-    i.second = i.first + "_" + random_alphanum();
-
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
     string insertStr((*param)->getOriginalType().getAsString() + " ");
-    insertStr.append(subMap[(*param)->getNameAsString()] + " = ");
+    insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
     insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
     rewriter.InsertText(call->getLocStart(), insertStr, true, true);
   }
@@ -162,16 +157,13 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call) const {
 // *code* ...
 // x = <expr> <operator> foo(arg1, ...) <operator> <expr>;
 // *code* ...
-void InlineASTVisitor::handleArgs(CallExpr* call) const {
+void InlineASTVisitor::handleArgs(CallExpr* call,
+                                  const map<string, string>& subMap) const {
   string callReplacement;
-
-  auto subMap(functionMgr.getVarSubs(call));
-  for (auto& i : subMap)
-    i.second = i.first + "_" + random_alphanum();
 
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
-    string varName(subMap[(*param)->getNameAsString()]);
+    string varName(subMap.at((*param)->getNameAsString()));
     string insertStr((*param)->getOriginalType().getAsString() + " ");
     insertStr.append(varName + " = ");
     insertStr.append(rewriter.ConvertToString(*arg) + ";\n");

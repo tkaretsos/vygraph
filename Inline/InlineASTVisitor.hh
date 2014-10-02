@@ -1,6 +1,7 @@
 #ifndef VYGRAPH_INLINEASTVISITOR_HH
 #define VYGRAPH_INLINEASTVISITOR_HH
 
+#include <map>
 #include <vector>
 
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -14,10 +15,14 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
   clang::Rewriter::RewriteOptions opts;
   clang::ASTContext& context;
 
-  void handleSimpleCallNoArgs(clang::CallExpr*) const;
-  void handleNoArgs(clang::CallExpr*) const;
-  void handleSimpleCallWithArgs(clang::CallExpr*) const;
-  void handleArgs(clang::CallExpr*) const;
+  void handleSimpleCallNoArgs(clang::CallExpr*,
+                              const std::map<std::string, std::string>&) const;
+  void handleNoArgs(clang::CallExpr*,
+                    const std::map<std::string, std::string>&) const;
+  void handleSimpleCallWithArgs(clang::CallExpr*,
+                                const std::map<std::string, std::string>&) const;
+  void handleArgs(clang::CallExpr*,
+                  const std::map<std::string, std::string>&) const;
 
   void findSubstitutions(clang::Stmt*, std::vector<util::ClangBaseWrapper>&) const;
 
