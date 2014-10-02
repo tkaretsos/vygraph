@@ -24,7 +24,11 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
   void handleArgs(clang::CallExpr*,
                   const std::map<std::string, std::string>&) const;
 
-  void findSubstitutions(clang::Stmt*, std::vector<util::ClangBaseWrapper>&) const;
+  void findSubstitutions(clang::Stmt*,
+                         std::vector<util::ClangBaseWrapper>&) const;
+
+  void replaceVarsInString(clang::Stmt*, std::string&,
+                           const std::map<std::string, std::string>&) const;
 
   std::string random_alphanum(size_t = 3) const;
 

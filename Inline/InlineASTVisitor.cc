@@ -52,20 +52,7 @@ void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call,
     if (isa<ReturnStmt>(*s))
       continue;
     string insertStr = rewriter.ConvertToString((*s));
-
-    vector<util::ClangBaseWrapper> subs;
-    findSubstitutions(*s, subs);
-    reverse(subs.begin(), subs.end());
-    for (auto& sub : subs) {
-      auto found = subMap.find(sub.getAsString(rewriter));
-      if (found != subMap.end()) {
-        auto offset = sub.getLocStart().getRawEncoding() -
-                      (*s)->getLocStart().getRawEncoding();
-        auto begin = insertStr.begin() + offset;
-        insertStr.replace(begin, begin + found->first.length(), found->second);
-      }
-    }
-
+    replaceVarsInString(*s, insertStr, subMap);
     if (isa<Expr>(*s))
       insertStr.append(";\n");
     rewriter.InsertText(call->getLocStart(), insertStr, true, true);
@@ -83,20 +70,7 @@ void InlineASTVisitor::handleNoArgs(CallExpr* call,
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr = rewriter.ConvertToString(*s);
-
-    vector<util::ClangBaseWrapper> subs;
-    findSubstitutions(*s, subs);
-    reverse(subs.begin(), subs.end());
-    for (auto& sub : subs) {
-      auto found = subMap.find(sub.getAsString(rewriter));
-      if (found != subMap.end()) {
-        auto offset = sub.getLocStart().getRawEncoding() -
-                      (*s)->getLocStart().getRawEncoding();
-        auto begin = insertStr.begin() + offset;
-        insertStr.replace(begin, begin + found->first.length(), found->second);
-      }
-    }
-
+    replaceVarsInString(*s, insertStr, subMap);
     if (isa<ReturnStmt>(*s)) {
       callReplacement.push_back('(');
       callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
@@ -132,21 +106,8 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call,
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     if (isa<ReturnStmt>(*s))
       continue;
-
-    string insertStr = rewriter.ConvertToString((*s));
-    vector<util::ClangBaseWrapper> subs;
-    findSubstitutions(*s, subs);
-    reverse(subs.begin(), subs.end());
-    for (auto& sub : subs) {
-      auto found = subMap.find(sub.getAsString(rewriter));
-      if (found != subMap.end()) {
-        auto offset = sub.getLocStart().getRawEncoding() -
-                      (*s)->getLocStart().getRawEncoding();
-        auto begin = insertStr.begin() + offset;
-        insertStr.replace(begin, begin + found->first.length(), found->second);
-      }
-    }
-
+    string insertStr = rewriter.ConvertToString(*s);
+    replaceVarsInString(*s, insertStr, subMap);
     if (isa<Expr>(*s))
       insertStr.append(";\n");
     rewriter.InsertText(call->getLocStart(), insertStr, true, true);
@@ -173,20 +134,7 @@ void InlineASTVisitor::handleArgs(CallExpr* call,
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr = rewriter.ConvertToString((*s));
-
-    vector<util::ClangBaseWrapper> subs;
-    findSubstitutions(*s, subs);
-    reverse(subs.begin(), subs.end());
-    for (auto& sub : subs) {
-      auto found = subMap.find(sub.getAsString(rewriter));
-      if (found != subMap.end()) {
-        auto offset = sub.getLocStart().getRawEncoding() -
-                      (*s)->getLocStart().getRawEncoding();
-        auto begin = insertStr.begin() + offset;
-        insertStr.replace(begin, begin + found->first.length(), found->second);
-      }
-    }
-
+    replaceVarsInString(*s, insertStr, subMap);
     if (isa<ReturnStmt>(*s)) {
       callReplacement.push_back('(');
       callReplacement.append(insertStr.begin() + 7, insertStr.end() - 2);
@@ -211,6 +159,23 @@ void InlineASTVisitor::findSubstitutions(Stmt* stmt,
   for (auto c : stmt->children()) {
     if (c != nullptr) {
       findSubstitutions(c, v);
+    }
+  }
+}
+
+void InlineASTVisitor::replaceVarsInString(Stmt* stmt, string& str,
+                                           const map<string, string>& subMap) const {
+
+  vector<util::ClangBaseWrapper> subs;
+  findSubstitutions(stmt, subs);
+  reverse(subs.begin(), subs.end());
+  for (auto& sub : subs) {
+    auto found = subMap.find(sub.getAsString(rewriter));
+    if (found != subMap.end()) {
+      auto offset = sub.getLocStart().getRawEncoding() -
+                    stmt->getLocStart().getRawEncoding();
+      auto begin = str.begin() + offset;
+      str.replace(begin, begin + found->first.length(), found->second);
     }
   }
 }
