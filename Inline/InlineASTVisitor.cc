@@ -208,14 +208,6 @@ void InlineASTVisitor::handleArgs(CallExpr* call) const {
   rewriter.ReplaceText(call->getSourceRange(), callReplacement);
 }
 
-void InlineASTVisitor::findRefInStmt(Stmt* stmt, vector<DeclRefExpr*>& declRefs) const {
-  if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt))
-    declRefs.push_back(ref);
-  for (auto& c : stmt->children())
-    if (c != nullptr)
-      findRefInStmt(c, declRefs);
-}
-
 void InlineASTVisitor::findSubstitutions(Stmt* stmt,
                                          vector<util::ClangBaseWrapper>& v) const {
   if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt))
