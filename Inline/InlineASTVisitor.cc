@@ -24,14 +24,14 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 
     if (call->getNumArgs() == 0) {
       if (functionMgr.isSimpleCall(call))
-        handleSimpleCallNoArgs(call, subMap);
+        noArgsNoRet(call, subMap);
       else
-        handleNoArgs(call, subMap);
+        noArgsWithRet(call, subMap);
     } else {
       if (functionMgr.isSimpleCall(call))
-        handleSimpleCallWithArgs(call, subMap);
+        argsNoRet(call, subMap);
       else
-        handleArgs(call, subMap);
+        argsWithRet(call, subMap);
     }
   }
 
@@ -42,8 +42,8 @@ bool InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 // *code* ...
 // foo();
 // *code* ...
-void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call,
-                                              const map<string, string>& subMap) const {
+void InlineASTVisitor::noArgsNoRet(CallExpr* call,
+                                   const map<string, string>& subMap) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
@@ -64,8 +64,8 @@ void InlineASTVisitor::handleSimpleCallNoArgs(CallExpr* call,
 // *code* ...
 // x = <expr> <operator> foo() <operator> <expr>;
 // *code* ...
-void InlineASTVisitor::handleNoArgs(CallExpr* call,
-                                    const map<string, string>& subMap) const {
+void InlineASTVisitor::noArgsWithRet(CallExpr* call,
+                                     const map<string, string>& subMap) const {
   string callReplacement;
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
@@ -89,8 +89,8 @@ void InlineASTVisitor::handleNoArgs(CallExpr* call,
 // *code* ...
 // foo(arg1, ...);
 // *code* ...
-void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call,
-                                                const map<string, string>& subMap) const {
+void InlineASTVisitor::argsNoRet(CallExpr* call,
+                                 const map<string, string>& subMap) const {
   // delete the call text
   rewriter.RemoveText(call->getSourceRange());
   rewriter.RemoveText(call->getLocStart(), 1);
@@ -119,8 +119,8 @@ void InlineASTVisitor::handleSimpleCallWithArgs(CallExpr* call,
 // *code* ...
 // x = <expr> <operator> foo(arg1, ...) <operator> <expr>;
 // *code* ...
-void InlineASTVisitor::handleArgs(CallExpr* call,
-                                  const map<string, string>& subMap) const {
+void InlineASTVisitor::argsWithRet(CallExpr* call,
+                                   const map<string, string>& subMap) const {
   string callReplacement;
 
   auto param = call->getDirectCallee()->param_begin();

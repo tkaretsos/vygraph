@@ -15,14 +15,14 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
   clang::Rewriter::RewriteOptions opts;
   clang::ASTContext& context;
 
-  void handleSimpleCallNoArgs(clang::CallExpr*,
-                              const std::map<std::string, std::string>&) const;
-  void handleNoArgs(clang::CallExpr*,
-                    const std::map<std::string, std::string>&) const;
-  void handleSimpleCallWithArgs(clang::CallExpr*,
-                                const std::map<std::string, std::string>&) const;
-  void handleArgs(clang::CallExpr*,
-                  const std::map<std::string, std::string>&) const;
+  void noArgsNoRet(clang::CallExpr*,
+                   const std::map<std::string, std::string>&) const;
+  void noArgsWithRet(clang::CallExpr*,
+                     const std::map<std::string, std::string>&) const;
+  void argsNoRet(clang::CallExpr*,
+                 const std::map<std::string, std::string>&) const;
+  void argsWithRet(clang::CallExpr*,
+                   const std::map<std::string, std::string>&) const;
 
   void findSubstitutions(clang::Stmt*,
                          std::vector<util::ClangBaseWrapper>&) const;
