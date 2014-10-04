@@ -130,9 +130,8 @@ InlineASTVisitor::argsWithRet(CallExpr* call,
 
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
-    string varName(subMap.at((*param)->getNameAsString()));
     string insertStr((*param)->getOriginalType().getAsString() + " ");
-    insertStr.append(varName + " = ");
+    insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
     insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
     rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
   }
@@ -164,9 +163,8 @@ InlineASTVisitor::findSubstitutions(Stmt* stmt,
       v.emplace_back(cast<VarDecl>(*d));
   }
   for (auto c : stmt->children()) {
-    if (c != nullptr) {
+    if (c != nullptr)
       findSubstitutions(c, v);
-    }
   }
 }
 
