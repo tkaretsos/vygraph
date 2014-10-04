@@ -30,6 +30,10 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
   void replaceVarsInString(clang::Stmt*, std::string&,
                            const std::map<std::string, std::string>&) const;
 
+  void inlineWhileStmt(clang::WhileStmt*,
+                       const clang::SourceLocation&,
+                       const std::map<std::string, std::string>&) const;
+
   std::string random_alphanum(size_t = 3) const;
 
 public:

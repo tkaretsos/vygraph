@@ -111,6 +111,10 @@ InlineASTVisitor::argsNoRet(CallExpr* call,
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     if (isa<ReturnStmt>(*s))
       continue;
+    if (auto whileStmt = dyn_cast<WhileStmt>(*s)) {
+      inlineWhileStmt(whileStmt, call->getLocStart(), subMap);
+      continue;
+    }
     string insertStr = rewriter.ConvertToString(*s);
     replaceVarsInString(*s, insertStr, subMap);
     if (isa<Expr>(*s))
@@ -196,6 +200,29 @@ InlineASTVisitor::random_alphanum(size_t length) const {
   auto randchar = [&]() { return charset[rand() % (sizeof(charset) - 1)]; };
   generate_n(str.begin(), length, randchar);
   return str;
+}
+
+void
+InlineASTVisitor::inlineWhileStmt(WhileStmt* stmt,
+                                  const SourceLocation& location,
+                                  const map<string, string>& subMap) const {
+
+  string condition(rewriter.ConvertToString(stmt->getCond()));
+  replaceVarsInString(stmt->getCond(), condition, subMap);
+  string insertStr("while (" + condition + ") {\n");
+  rewriter.InsertText(location, insertStr, true, true);
+
+  auto body = cast<CompoundStmt>(stmt->getBody());
+  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
+    if (isa<ReturnStmt>(*s))
+      continue;
+    insertStr = rewriter.ConvertToString(*s);
+    replaceVarsInString(*s, insertStr, subMap);
+    if (isa<Expr>(*s))
+      insertStr.append(";\n");
+    rewriter.InsertText(location, insertStr, true, true);
+  }
+  rewriter.InsertText(location, "}\n", true, true);
 }
 
 } // namespace vy
