@@ -19,7 +19,7 @@ InlineAction::CreateASTConsumer(CompilerInstance& CI,
 
 void
 InlineAction::EndSourceFileAction() {
-  SourceManager& SM = rewriter.getSourceMgr();
+  SourceManager& SM { rewriter.getSourceMgr() };
   std::string filename = SM.getFileEntryForID(SM.getMainFileID())->getName();
   size_t found = filename.find_last_of('.');
   if (found != std::string::npos)
