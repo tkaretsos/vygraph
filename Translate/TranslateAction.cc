@@ -12,13 +12,11 @@ TranslateAction::TranslateAction() { }
 
 ASTConsumer*
 TranslateAction::CreateASTConsumer(CompilerInstance& CI, llvm::StringRef file) {
-  std::cout << "CreateASTConsumer" << std::endl;
   return new TranslateASTConsumer(CI.getASTContext(), outStream);
 }
 
 bool
 TranslateAction::BeginSourceFileAction(CompilerInstance& CI, StringRef filename) {
-  std::cout << "BeginSourceFileAction" << " = " << filename.str() << std::endl;
   outFileName = filename.str();
   auto found = outFileName.find_last_of('.');
   if (found != std::string::npos)
@@ -30,7 +28,6 @@ TranslateAction::BeginSourceFileAction(CompilerInstance& CI, StringRef filename)
 
 void
 TranslateAction::EndSourceFileAction() {
-  std::cout << "EndSourceFileAction" << std::endl;
   std::ofstream outFile;
   outFile.open(outFileName, std::ios_base::trunc);
   outFile << outStream.rdbuf() << std::endl;
