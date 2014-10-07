@@ -12,6 +12,7 @@ vygraph
 build
 *.o
 *.vy.c
+*.vyc
 *.autosave
 *.kdev4
 *.kate-swp
