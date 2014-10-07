@@ -1,5 +1,6 @@
 #include "vygraph_lang.h"
 #include <stdbool.h>
+#include <assert.h>
 
 bool lock = true;
 bool writing = false;
