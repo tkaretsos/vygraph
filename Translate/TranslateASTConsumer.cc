@@ -68,6 +68,10 @@ TranslateASTConsumer::insertVarDecl(VarDecl* varDecl) {
     str = getAsString(varDecl->getSourceRange());
   }
 
+  auto found = str.find('=');
+  if (found != string::npos)
+    str.insert(found, ":");
+
   outs << str << endl;
 }
 
