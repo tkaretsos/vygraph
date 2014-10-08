@@ -24,6 +24,17 @@ RangeToStr(const clang::SourceRange& range, const clang::ASTContext& context) {
   return std::string(SM.getCharacterData(beginLoc), size);
 }
 
+std::string
+random_alphanum(size_t length = 3) {
+  const char charset[] = "0123456789"
+                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                         "abcdefghijklmnopqrstuvwxyz";
+  std::string str(length, 0);
+  auto randchar = [&]() { return charset[rand() % (sizeof(charset) - 1)]; };
+  generate_n(str.begin(), length, randchar);
+  return str;
+}
+
 } // namespace util
 } // namespace vy
 

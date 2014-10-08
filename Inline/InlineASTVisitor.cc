@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include "../Analysis/FunctionManager.hh"
+#include "Utility/Functions.hh"
 
 namespace vy {
 
@@ -18,7 +19,7 @@ bool
 InlineASTVisitor::VisitCallExpr(CallExpr* call) {
   if (functionMgr.isUserDefined(call->getDirectCallee()->getNameAsString())) {
 
-    string ext(random_alphanum());
+    string ext(util::random_alphanum());
     auto subMap(functionMgr.getVarSubs(call));
     for (auto& i : subMap)
       i.second = i.first + "_" + ext;
@@ -188,18 +189,6 @@ InlineASTVisitor::replaceVarsInString(Stmt* stmt, string& str,
       str.replace(begin, begin + found->first.length(), found->second);
     }
   }
-}
-
-
-string
-InlineASTVisitor::random_alphanum(size_t length) const {
-  const char charset[] = "0123456789"
-                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                         "abcdefghijklmnopqrstuvwxyz";
-  string str(length, 0);
-  auto randchar = [&]() { return charset[rand() % (sizeof(charset) - 1)]; };
-  generate_n(str.begin(), length, randchar);
-  return str;
 }
 
 void
