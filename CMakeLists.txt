@@ -6,6 +6,7 @@ add_clang_executable(vygraph
   Inline/InlineASTVisitor.cc
   Inline/InlineASTConsumer.cc
   Inline/InlineAction.cc
+  Utility/Functions.cc
   vygraph.cc
 )
 
