@@ -14,17 +14,16 @@ int foo(int x_foo, int y_foo) {
   for (int i = 0; i < 5; ++i) {
     z_foo += i;
   }
-//   int j = 0;
-//   while (j < 5)
-//   {
-//     z_foo -= j;
-//     j++;
-//   }
-//   int k = 0;
-//   do {
-//     z_foo += k;
-//     k++;
-//   } while (k < 6);
+  int j = 0;
+  while (j < 5) {
+    z_foo -= j;
+    j++;
+  }
+  int k = 0;
+  do {
+    z_foo += k;
+    k++;
+  } while (k < 6);
   z_foo++;
   return x_foo + 5 + z_foo;
 }
