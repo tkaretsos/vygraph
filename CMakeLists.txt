@@ -8,6 +8,7 @@ add_clang_executable(vygraph
   Inline/InlineAction.cc
   Translate/TranslateAction.cc
   Translate/TranslateASTConsumer.cc
+  Utility/Functions.cc
   vygraph.cc
 )
 
