@@ -7,6 +7,7 @@
 using namespace std;
 
 #include "../Analysis/FunctionManager.hh"
+#include "../Utility/Functions.hh"
 
 namespace vy {
 
@@ -36,22 +37,6 @@ TranslateASTConsumer::HandleTopLevelDecl(DeclGroupRef decls) {
   return true;
 }
 
-string
-TranslateASTConsumer::getAsString(const SourceRange& range) {
-  auto& SM = context.getSourceManager();
-  auto charRange = CharSourceRange::getTokenRange(range);
-  auto beginLoc = SM.getSpellingLoc(charRange.getBegin());
-  auto endLoc = SM.getSpellingLoc(charRange.getEnd());
-  auto size = SM.getDecomposedLoc(endLoc).second -
-              SM.getDecomposedLoc(beginLoc).second;
-  size += Lexer::MeasureTokenLength(endLoc, SM, context.getLangOpts());
-
-  string str(SM.getCharacterData(beginLoc), size);
-  str.append(";");
-
-  return str;
-}
-
 void
 TranslateASTConsumer::insertVarDecl(VarDecl* varDecl) {
   string str;
@@ -60,17 +45,16 @@ TranslateASTConsumer::insertVarDecl(VarDecl* varDecl) {
     str.append(varDecl->getNameAsString());
     if (varDecl->hasInit()) {
       str.append(" = ");
-      str.append(getAsString(varDecl->getInit()->getSourceRange()));
-    } else {
-      str.append(";");
+      str.append(util::RangeToStr(varDecl->getInit()->getSourceRange(), context));
     }
   } else {
-    str = getAsString(varDecl->getSourceRange());
+    str = util::RangeToStr(varDecl->getSourceRange(), context);
   }
 
   auto found = str.find('=');
   if (found != string::npos)
     str.insert(found, ":");
+  str.append(";");
 
   outs << str << endl;
 }

@@ -16,8 +16,6 @@ class TranslateASTConsumer : public clang::ASTConsumer {
   clang::ASTContext& context;
   std::stringstream& outs;
 
-  std::string getAsString(const clang::SourceRange&);
-
   void insertVarDecl(clang::VarDecl*);
 
 public:
