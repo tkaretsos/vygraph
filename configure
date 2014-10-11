@@ -22,18 +22,24 @@ command -v cmake >/dev/null 2>&1 || {
   exit 1;
 }
 
-if [ -e "$1"/README.txt ]; then
+if [ -d "$1" ]; then
   llvm_src_dir="$(cd "$1" && pwd)"
 else
-  echo -e "Directory $1 is not a valid LLVM source directory."
+  echo -e "Directory $1 does not exist."
   exit 1
 fi
 
-if [ -e "$2"/bin/opt ]; then
+if [ -d "$2" ]; then
   llvm_obj_dir="$(cd "$2" && pwd)"
+else
+  echo -e "Directory $2 does not exist."
+  exit 1
+fi
+
+if [ -d "$3" ]; then
   llvm_bin_dir="$(cd "$3" && pwd)"
 else
-  echo -e "Directory $2 is not a valid LLVM build directory."
+  echo -e "Directory $3 does not exist."
   exit 1
 fi
 
@@ -47,19 +53,19 @@ if ! grep -q ${proj_root_dir} ${makelist}; then
   echo -e "\nadd_subdirectory(${proj_root_dir} ${proj_root_dir})\n" >> ${makelist}
 fi
 
+cd ${llvm_obj_dir}
+if [ $build_tool = "ninja" ]; then
+    cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
+else
+    cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
+fi
+
 # Create a symlink to the executable for convenience.
 if [ -h ${proj_root_dir}/vygraph ]; then
   echo -e "Cannot create link ${proj_root_dir}/vygraph. File already exists."
 else
   cd ${proj_root_dir}
   ln -s ${llvm_obj_dir}/bin/vygraph vygraph
-fi
-
-cd ${llvm_obj_dir}
-if [ $build_tool = "ninja" ]; then
-    cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
-else
-    cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
 fi
 
 cd ${call_dir}
