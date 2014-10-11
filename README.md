@@ -17,7 +17,7 @@ vygraph is using the Clang's build system. Read more [here](http://clang.llvm.or
 I provide two scripts to make things a bit simpler, because vygraph's source directory lies under a  
 different directory from the LLVM/Clang source code. Here are the two scripts:  
 
-### download_llvm
+#### download_llvm
 This script is only for downloading and extracting the required LLVM and Clang sources. If you already  
 have the sources of LLVM, Clang and [Clang tools](http://clang.llvm.org/docs/ClangTools.html), it is not required to execute this script.  
 
@@ -28,7 +28,7 @@ When this script is executed, it will generate the file `llvm_dirs` which contai
 the source, build and bin directories of LLVM. You can use this file with the next script, in order  
 to configure the project.
 
-### configure
+#### configure
 This script helps set the current project as a tool project of Clang, so when you build LLVM and Clang  
 this project will be built as well. When you run this script you need to provide it with three directories.  
 The LLVM source directory, the LLVM build directory and the LLVM bin directory:
@@ -42,7 +42,7 @@ If you previously ran the `download_llvm` script you can also:
 After `configure` script is executed successfully you can run `make` in the project directory and LLVM,  
 Clang, Clang tools and this project will be built. 
 
-### Example
+#### Example
 If you do not have the sources of LLVM and Clang:  
 
 `sh download_llvm ..  
