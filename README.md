@@ -45,9 +45,9 @@ Clang, Clang tools and this project will be built.
 #### Example
 If you do not have the sources of LLVM and Clang:  
 
-`sh download_llvm ..  
-sh configure ($cat llvm_dirs)  
-make`  
+`sh download_llvm ..`  
+`sh configure ($cat llvm_dirs)`  
+`make`  
 
 
 ## How to run
