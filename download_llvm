@@ -66,15 +66,6 @@ tar -zxf ${tools_tar}
 rm ${tools_tar}
 mv clang-tools-extra-${llvm_version} extra
 
-# Configure and build LLVM and clang
-#cd ${llvm_obj_dir}
-#if [ $build_tool = "ninja" ]; then
-#  cmake -G Ninja ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
-#else
-#  cmake ${llvm_src_dir} -DCMAKE_INSTALL_PREFIX=${llvm_bin_dir} -DLLVM_TARGETS_TO_BUILD=host
-#fi
-#${build_tool}
-
 cd ${cur_dir}
 
 echo -e "LLVM source  (llvm_src_dir): ${llvm_src_dir}"
