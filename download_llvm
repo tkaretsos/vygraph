@@ -15,15 +15,13 @@ command -v g++ >/dev/null 2>&1 || {
   exit 1;
 }
 
-llvm_tar=llvm-${llvm_version}.src.tar.gz
-clang_tar=clang-${llvm_version}.src.tar.gz
-tools_tar=clang-tools-extra-${llvm_version}.src.tar.gz
-
-cur_dir=`pwd`
+cur_dir=$(pwd)
 proj_root_dir="$(cd "$(dirname "$0")" && pwd)"
 
 if [ $# -eq 0 ]; then
-  llvm_root_dir=${proj_root_dir}/llvm-clang-${llvm_version}
+  #llvm_root_dir=${proj_root_dir}/llvm-clang-${llvm_version}
+  echo -e "Please define a directory to download LLVM and Clang."
+  exit 1
 else
   if [ ! -d "$1" ]; then
     echo -e "Directory $1 does not exist."
@@ -34,6 +32,10 @@ else
     cd ${proj_root_dir}
   fi
 fi
+
+llvm_tar=llvm-${llvm_version}.src.tar.gz
+clang_tar=clang-${llvm_version}.src.tar.gz
+tools_tar=clang-tools-extra-${llvm_version}.src.tar.gz
 
 llvm_src_dir=${llvm_root_dir}/src
 llvm_obj_dir=${llvm_root_dir}/build
