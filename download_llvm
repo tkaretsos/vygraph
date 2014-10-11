@@ -3,18 +3,6 @@
 llvm_version="3.4"
 build_tool="make"
 
-command -v cmake >/dev/null 2>&1 || {
-  echo -e "cmake is required to run this script. Aborting..." >&2;
-  echo -e "hint: apt-get install cmake\n" >&2;
-  exit 1;
-}
-
-command -v g++ >/dev/null 2>&1 || {
-  echo -e "g++ is required to run this script. Aborting..." >&2;
-  echo -e "hint: apt-get install build-essential\n" >&2;
-  exit 1;
-}
-
 cur_dir=$(pwd)
 proj_root_dir="$(cd "$(dirname "$0")" && pwd)"
 
