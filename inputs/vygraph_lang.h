@@ -25,7 +25,10 @@
     vy_join_##name(__VA_ARGS__);
 #endif
 
-void vy_atomic_begin() __attribute__((weak));
-void vy_atomic_end() __attribute__((weak));
+void vy_atomic_begin()  __attribute__((weak));
+void vy_atomic_end()    __attribute__((weak));
+
+void vy_assert(bool)    __attribute__((weak));
+void vy_assume(bool)    __attribute__((weak));
 
 #endif /* VYGRAPH_LANG_H */
