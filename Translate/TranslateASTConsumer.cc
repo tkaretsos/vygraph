@@ -15,7 +15,7 @@ using namespace clang;
 
 TranslateASTConsumer::TranslateASTConsumer(ASTContext& context,
                                            stringstream& outstream)
-  : context(context), outs(outstream)
+  : context(context), outs(outstream), indentLevel(0)
 { }
 
 bool
@@ -59,6 +59,14 @@ TranslateASTConsumer::insertVarDecl(VarDecl* varDecl) {
   outs << str << endl;
 }
 
+void
+TranslateASTConsumer::indent() {
+  indentStr.assign(2 * ++indentLevel, ' ');
+}
 
+void
+TranslateASTConsumer::unindent() {
+  indentStr.assign(2 * --indentLevel, ' ');
+}
 
 } // namespace vy
