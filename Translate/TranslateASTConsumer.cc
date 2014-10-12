@@ -69,4 +69,16 @@ TranslateASTConsumer::unindent() {
   indentStr.assign(2 * --indentLevel, ' ');
 }
 
+void
+TranslateASTConsumer::beginFunction(string functionName) {
+  outs << indentStr << functionName << " {" << endl;
+  indent();
+}
+
+void
+TranslateASTConsumer::endFunction() {
+  unindent();
+  outs << indentStr << "}" << endl;
+}
+
 } // namespace vy

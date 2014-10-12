@@ -23,6 +23,9 @@ class TranslateASTConsumer : public clang::ASTConsumer {
   void indent();
   void unindent();
 
+  void beginFunction(std::string);
+  void endFunction();
+
 public:
   TranslateASTConsumer(clang::ASTContext&, std::stringstream&);
   bool HandleTopLevelDecl(clang::DeclGroupRef) override;
