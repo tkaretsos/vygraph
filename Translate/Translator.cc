@@ -55,9 +55,12 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
           continue;
         string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
         replaceAssignOp(stmtStr);
-        if (isa<Expr>(stmt))
+        if (isa<DeclStmt>(stmt)) {
+          outs << indentStr;
+        } else {
+          insertLocationStr();
           stmtStr.append(";");
-        insertLocationStr();
+        }
         outs << stmtStr << endl;
       }
     }
