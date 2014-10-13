@@ -5,27 +5,14 @@
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
 #include "clang/AST/DeclGroup.h"
-#include "clang/Basic/SourceLocation.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+
+#include "Translator.hh"
 
 namespace vy {
 
 class TranslateASTConsumer : public clang::ASTConsumer {
-  clang::ASTContext& context;
-  std::stringstream& outs;
-  std::size_t indentLevel;
-  std::string indentStr;
-
-  void insertVarDecl(clang::VarDecl*);
-
-  void indent();
-  void unindent();
-
-  void beginFunction(std::string);
-  void endFunction();
-
+  Translator translator;
 public:
   TranslateASTConsumer(clang::ASTContext&, std::stringstream&);
   bool HandleTopLevelDecl(clang::DeclGroupRef) override;
