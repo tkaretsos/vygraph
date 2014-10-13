@@ -13,12 +13,16 @@ class Translator {
   std::stringstream& outs;
   std::size_t indentLevel;
   std::string indentStr;
+  unsigned int pcCounter;
+  const unsigned int pcError = -1;
 
   void indent();
   void unindent();
 
   void beginFunction(const std::string&);
   void endFunction();
+
+  void insertLocationStr();
 
   void replaceAssignOp(std::string&) const;
 

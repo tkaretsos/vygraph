@@ -15,7 +15,7 @@ using namespace clang;
 using namespace std;
 
 Translator::Translator(stringstream& sstream, ASTContext& context)
-  : context(context), outs(sstream), indentLevel(0)
+  : context(context), outs(sstream), indentLevel(0), pcCounter(0)
 { }
 
 void
@@ -57,7 +57,8 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
         replaceAssignOp(stmtStr);
         if (isa<Expr>(stmt))
           stmtStr.append(";");
-        outs << indentStr << stmtStr << endl;
+        insertLocationStr();
+        outs << stmtStr << endl;
       }
     }
   }
@@ -94,5 +95,12 @@ Translator::replaceAssignOp(std::string& expr) const {
   if (found != string::npos)
     expr.insert(found, ":");
 }
+
+void
+Translator::insertLocationStr() {
+  outs << indentStr << "pc" << pcCounter++ << " -> ";
+  outs << "pc" << pcCounter << ": ";
+}
+
 
 } // namespace vy
