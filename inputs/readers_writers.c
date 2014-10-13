@@ -1,6 +1,4 @@
 #include "vygraph_lang.h"
-#include <stdbool.h>
-#include <assert.h>
 
 bool lock = true;
 bool writing = false;
@@ -12,7 +10,7 @@ void writer() {
 }
 
 void reader() {
-  assert(!writing);
+  vy_assert(!writing);
 }
 
 void increment_i() {
@@ -21,7 +19,7 @@ void increment_i() {
 
 int main () {
   vy_atomic_begin();
-//     assume(lock);
+  vy_assume(lock);
   lock = false;
   vy_spawn(writer);
   vy_atomic_end();
@@ -34,7 +32,7 @@ int main () {
   if (i == 0) {
     vy_atomic_begin();
     increment_i();
-//       assume(lock);
+    vy_assume(lock);
     lock= false;
     vy_spawn(reader);
     vy_atomic_end();
