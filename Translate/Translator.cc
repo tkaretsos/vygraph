@@ -50,26 +50,41 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   CFG* cfg = CFG::buildCFG(funcDecl, funcDecl->getBody(),
                            &context, CFG::BuildOptions());
 
-  auto cfgBegin = cfg->begin() + 1;
-  auto cfgEnd = cfg->end() - 1;
+  auto cfgBegin = cfg->rbegin() + 1;
+  auto cfgEnd = cfg->rend() - 1;
   for (auto block = cfgBegin; block != cfgEnd; ++block) {
     for (auto element = (*block)->begin(); element != (*block)->end(); ++element) {
       auto cfgStmt = element->getAs<CFGStmt>();
       if (cfgStmt.hasValue()) {
         auto stmt = cfgStmt->getStmt();
-        if (isa<ReturnStmt>(stmt))
-          continue;
-        if (auto declStmt = dyn_cast<DeclStmt>(stmt)) {
-          if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl())) {
-            translateVarDecl(varDecl);
+        switch (stmt->getStmtClass()) {
+
+          default:
+          {
+            string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
+            replaceAssignOp(stmtStr);
+            insertLocationStr();
+            stmtStr.append(";");
+            outs << stmtStr << endl;
+            break;
+          }
+
+          case Stmt::ReturnStmtClass:
+          {
             continue;
+            break;
+          }
+
+          case Stmt::DeclStmtClass:
+          {
+            auto declStmt = cast<DeclStmt>(stmt);
+            if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl())) {
+              translateVarDecl(varDecl);
+            }
+            continue;
+            break;
           }
         }
-        string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
-        replaceAssignOp(stmtStr);
-        insertLocationStr();
-        stmtStr.append(";");
-        outs << stmtStr << endl;
       }
     }
   }
