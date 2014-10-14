@@ -26,7 +26,8 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
     str.append(varDecl->getNameAsString());
     str.append(" = ");
     if (varDecl->hasInit()) {
-      str.append(util::RangeToStr(varDecl->getInit()->getSourceRange(), context));
+      string init(util::RangeToStr(varDecl->getInit()->getSourceRange(), context));
+      str.append((init == "0") ? "false" : "true");
     } else {
       str.append("*");
     }
