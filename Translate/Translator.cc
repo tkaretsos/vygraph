@@ -19,17 +19,22 @@ Translator::Translator(stringstream& sstream, ASTContext& context)
 { }
 
 void
-Translator::translateVarDecl(clang::VarDecl* varDecl) {
+Translator::translateVarDecl(const clang::VarDecl* varDecl) {
   string str;
   if (varDecl->getType().getTypePtr()->isBooleanType()) {
     str = "bool ";
     str.append(varDecl->getNameAsString());
+    str.append(" = ");
     if (varDecl->hasInit()) {
-      str.append(" = ");
       str.append(util::RangeToStr(varDecl->getInit()->getSourceRange(), context));
+    } else {
+      str.append("*");
     }
   } else {
     str = util::RangeToStr(varDecl->getSourceRange(), context);
+    if (!varDecl->hasInit()) {
+      str.append(" = *");
+    }
   }
 
   replaceAssignOp(str);

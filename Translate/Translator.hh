@@ -29,7 +29,7 @@ class Translator {
 public:
   Translator(std::stringstream&, clang::ASTContext&);
 
-  void translateVarDecl(clang::VarDecl*);
+  void translateVarDecl(const clang::VarDecl*);
   void translateFunction(clang::FunctionDecl*);
 };
 
