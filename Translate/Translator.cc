@@ -59,14 +59,16 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
         auto stmt = cfgStmt->getStmt();
         if (isa<ReturnStmt>(stmt))
           continue;
+        if (auto declStmt = dyn_cast<DeclStmt>(stmt)) {
+          if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl())) {
+            translateVarDecl(varDecl);
+            continue;
+          }
+        }
         string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
         replaceAssignOp(stmtStr);
-        if (isa<DeclStmt>(stmt)) {
-          outs << indentStr;
-        } else {
-          insertLocationStr();
-          stmtStr.append(";");
-        }
+        insertLocationStr();
+        stmtStr.append(";");
         outs << stmtStr << endl;
       }
     }
