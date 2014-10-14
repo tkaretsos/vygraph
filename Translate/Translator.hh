@@ -3,6 +3,7 @@
 
 #include <sstream>
 
+#include "clang/Analysis/CFG.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
 
@@ -23,7 +24,8 @@ class Translator {
   void endFunction();
 
   void insertLocationStr();
-
+  void insertSequentialStmts(clang::CFGBlock::const_iterator,
+                             clang::CFGBlock::const_iterator);
   void replaceAssignOp(std::string&) const;
 
 public:
