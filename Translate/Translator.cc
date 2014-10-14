@@ -50,10 +50,9 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   CFG* cfg = CFG::buildCFG(funcDecl, funcDecl->getBody(),
                            &context, CFG::BuildOptions());
 
-  auto cfgBegin = cfg->rbegin() + 1;
-  auto cfgEnd = cfg->rend() - 1;
-  for (auto block = cfgBegin; block != cfgEnd; ++block) {
-    for (auto element = (*block)->begin(); element != (*block)->end(); ++element) {
+  auto curBlock = cfg->getEntry();
+  while (!curBlock.succ_empty()) {
+    for (auto element = curBlock.begin(); element != curBlock.end(); ++element) {
       auto cfgStmt = element->getAs<CFGStmt>();
       if (cfgStmt.hasValue()) {
         auto stmt = cfgStmt->getStmt();
@@ -87,6 +86,8 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
         }
       }
     }
+
+    curBlock = **curBlock.succ_begin();
   }
 
   delete cfg;
