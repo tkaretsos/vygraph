@@ -49,9 +49,20 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   CFG* cfg = CFG::buildCFG(funcDecl, funcDecl->getBody(),
                            &context, CFG::BuildOptions());
 
-  auto curBlock = cfg->getEntry();
+  auto& curBlock = cfg->getEntry();
   while (!curBlock.succ_empty()) {
-    insertSequentialStmts(curBlock.begin(), curBlock.end());
+    auto terminatorCond = curBlock.getTerminatorCondition();
+    if (terminatorCond != nullptr) {
+      insertSequentialStmts(curBlock.begin(), curBlock.end() - 1);
+      auto branchLoc = pcCounter;
+      insertBranchCondTrue(terminatorCond);
+      insertBranchTargetTrue(**curBlock.succ_begin());
+      auto branchExitLoc = pcCounter;
+      insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, branchExitLoc));
+      curBlock = **curBlock.succ_begin();
+    } else {
+      insertSequentialStmts(curBlock.begin(), curBlock.end());
+    }
     curBlock = **curBlock.succ_begin();
   }
 
@@ -127,6 +138,32 @@ Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
   }
 }
 
+void
+Translator::insertBranchCondTrue(const Stmt* condition) {
+  string stmtStr(util::RangeToStr(condition->getSourceRange(), context));
+  stmtStr.append(";");
+  insertLocationStr();
+  outs << stmtStr << endl;
+}
+
+void
+Translator::insertBranchCondFalse(const Stmt* condition, const LocationPair& locs) {
+  string stmtStr(util::RangeToStr(condition->getSourceRange(), context));
+  stmtStr.insert(0, "!(");
+  stmtStr.append(");");
+  outs << indentStr << getLocationStr(locs.first, locs.second)
+       << stmtStr << endl;
+}
+
+void
+Translator::insertBranchTargetTrue(const CFGBlock& curBlock) {
+  insertSequentialStmts(curBlock.begin(), curBlock.end());
+}
+
+void
+Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
+
+}
 
 void
 Translator::insertLocationStr() {
@@ -134,5 +171,19 @@ Translator::insertLocationStr() {
   outs << "pc" << pcCounter << ": ";
 }
 
+string
+Translator::getLocationStr(unsigned int from, unsigned int to) const {
+  string str("pc" + to_string(from) + " -> pc");
+  str.append((to == pcError) ? "Error" : to_string(to));
+  str.append(": ");
+  return str;
+}
+
+unsigned int
+Translator::getBranchExitID(const CFGBlock& curBlock) const {
+  auto target = *curBlock.succ_begin();
+  auto targetSucc = *target->succ_begin();
+  return targetSucc->getBlockID();
+}
 
 } // namespace vy
