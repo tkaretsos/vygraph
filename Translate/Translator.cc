@@ -181,4 +181,9 @@ Translator::getBranchExitID(const CFGBlock& curBlock) const {
   return targetSucc->getBlockID();
 }
 
+ostream& operator<<(ostream& os, const Translator::LocationPair& loc) {
+  os << "pc" << loc.first << " -> pc" << loc.second << ": ";
+  return os;
+}
+
 } // namespace vy

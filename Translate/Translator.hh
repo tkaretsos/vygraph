@@ -11,8 +11,15 @@
 namespace vy {
 
 class Translator {
+public:
   typedef std::pair<unsigned int, unsigned int> LocationPair;
 
+  Translator(std::stringstream&, clang::ASTContext&);
+
+  void translateVarDecl(const clang::VarDecl*);
+  void translateFunction(clang::FunctionDecl*);
+
+private:
   clang::ASTContext& context;
   std::stringstream& outs;
   std::size_t indentLevel;
@@ -27,7 +34,6 @@ class Translator {
   void endFunction();
 
   void insertLocationStr();
-  std::string getLocationStr(unsigned int, unsigned int) const;
   void insertStmt(const clang::Stmt*);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator);
@@ -35,16 +41,13 @@ class Translator {
   void insertBranchCondFalse(const clang::Stmt*, const LocationPair&);
   void insertBranchTargetTrue(const clang::CFGBlock&);
   void insertBranchTargetFalse(const clang::CFGBlock&);
+
   void replaceAssignOp(std::string&) const;
-
+  std::string getLocationStr(unsigned int, unsigned int) const;
   unsigned int getBranchExitID(const clang::CFGBlock&) const;
-
-public:
-  Translator(std::stringstream&, clang::ASTContext&);
-
-  void translateVarDecl(const clang::VarDecl*);
-  void translateFunction(clang::FunctionDecl*);
 };
+
+std::ostream& operator<<(std::ostream&, const Translator::LocationPair&);
 
 } // namespace vy
 
