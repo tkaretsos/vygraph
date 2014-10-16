@@ -99,14 +99,21 @@ Translator::replaceAssignOp(std::string& expr) const {
     expr.insert(found, ":");
 }
 
+Translator::LocationPair
+Translator::getLocation() {
+  LocationPair location;
+  location.first = pcCounter;
+  location.second = ++pcCounter;
+  return location;
+}
+
 void Translator::insertStmt (const Stmt* stmt) {
   switch (stmt->getStmtClass()) {
     default: {
       string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
       replaceAssignOp(stmtStr);
-      insertLocationStr();
       stmtStr.append(";");
-      outs << stmtStr << endl;
+      outs << indentStr << getLocation() << stmtStr << endl;
       break;
     }
 
@@ -137,8 +144,7 @@ void
 Translator::insertBranchCondTrue(const Stmt* condition) {
   string stmtStr(util::RangeToStr(condition->getSourceRange(), context));
   stmtStr.append(";");
-  insertLocationStr();
-  outs << stmtStr << endl;
+  outs << indentStr << getLocation() << stmtStr << endl;
 }
 
 void
@@ -146,8 +152,7 @@ Translator::insertBranchCondFalse(const Stmt* condition, const LocationPair& loc
   string stmtStr(util::RangeToStr(condition->getSourceRange(), context));
   stmtStr.insert(0, "!(");
   stmtStr.append(");");
-  outs << indentStr << getLocationStr(locs.first, locs.second)
-       << stmtStr << endl;
+  outs << indentStr << locs << stmtStr << endl;
 }
 
 void

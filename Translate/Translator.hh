@@ -43,6 +43,7 @@ private:
   void insertBranchTargetFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
+  LocationPair getLocation();
   std::string getLocationStr(unsigned int, unsigned int) const;
   unsigned int getBranchExitID(const clang::CFGBlock&) const;
 };
