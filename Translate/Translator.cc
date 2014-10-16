@@ -171,14 +171,6 @@ Translator::insertLocationStr() {
   outs << "pc" << pcCounter << ": ";
 }
 
-string
-Translator::getLocationStr(unsigned int from, unsigned int to) const {
-  string str("pc" + to_string(from) + " -> pc");
-  str.append((to == pcError) ? "Error" : to_string(to));
-  str.append(": ");
-  return str;
-}
-
 unsigned int
 Translator::getBranchExitID(const CFGBlock& curBlock) const {
   auto target = *curBlock.succ_begin();
