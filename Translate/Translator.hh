@@ -33,7 +33,6 @@ private:
   void beginFunction(const std::string&);
   void endFunction();
 
-  void insertLocationStr();
   void insertStmt(const clang::Stmt*);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator);

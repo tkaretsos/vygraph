@@ -165,12 +165,6 @@ Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
 
 }
 
-void
-Translator::insertLocationStr() {
-  outs << indentStr << "pc" << pcCounter++ << " -> ";
-  outs << "pc" << pcCounter << ": ";
-}
-
 unsigned int
 Translator::getBranchExitID(const CFGBlock& curBlock) const {
   auto target = *curBlock.succ_begin();
