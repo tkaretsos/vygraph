@@ -33,7 +33,7 @@ private:
   void beginFunction(const std::string&);
   void endFunction();
 
-  void insertStmt(const clang::Stmt*);
+  void insertStmt(const clang::Stmt*, const LocationPair* = nullptr);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator);
   void insertBranchCondTrue(const clang::Stmt*);

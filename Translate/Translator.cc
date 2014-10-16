@@ -107,13 +107,14 @@ Translator::getLocation() {
   return location;
 }
 
-void Translator::insertStmt (const Stmt* stmt) {
+void Translator::insertStmt (const Stmt* stmt, const LocationPair* location) {
   switch (stmt->getStmtClass()) {
     default: {
       string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
       replaceAssignOp(stmtStr);
       stmtStr.append(";");
-      outs << indentStr << getLocation() << stmtStr << endl;
+      outs << indentStr << ((location) ? *location : getLocation())
+           << stmtStr << endl;
       break;
     }
 
