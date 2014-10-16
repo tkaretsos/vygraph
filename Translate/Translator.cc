@@ -99,41 +99,36 @@ Translator::replaceAssignOp(std::string& expr) const {
     expr.insert(found, ":");
 }
 
+void Translator::insertStmt (const Stmt* stmt) {
+  switch (stmt->getStmtClass()) {
+    default: {
+      string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
+      replaceAssignOp(stmtStr);
+      insertLocationStr();
+      stmtStr.append(";");
+      outs << stmtStr << endl;
+      break;
+    }
+
+    case Stmt::DeclStmtClass: {
+      auto declStmt = cast<DeclStmt>(stmt);
+      if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl()))
+        translateVarDecl(varDecl);
+      break;
+    }
+
+    case Stmt::ReturnStmtClass:
+      break;
+  }
+}
+
 void
 Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
                                   CFGBlock::const_iterator end) {
   for (auto element = begin; element != end; ++element) {
     auto cfgStmt = element->getAs<CFGStmt>();
     if (cfgStmt.hasValue()) {
-      auto stmt = cfgStmt->getStmt();
-      switch (stmt->getStmtClass()) {
-
-        default:
-        {
-          string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
-          replaceAssignOp(stmtStr);
-          insertLocationStr();
-          stmtStr.append(";");
-          outs << stmtStr << endl;
-          break;
-        }
-
-        case Stmt::ReturnStmtClass:
-        {
-          continue;
-          break;
-        }
-
-        case Stmt::DeclStmtClass:
-        {
-          auto declStmt = cast<DeclStmt>(stmt);
-          if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl())) {
-            translateVarDecl(varDecl);
-          }
-          continue;
-          break;
-        }
-      }
+      insertStmt(cfgStmt->getStmt());
     }
   }
 }

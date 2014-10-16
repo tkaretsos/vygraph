@@ -28,6 +28,7 @@ class Translator {
 
   void insertLocationStr();
   std::string getLocationStr(unsigned int, unsigned int) const;
+  void insertStmt(const clang::Stmt*);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator);
   void insertBranchCondTrue(const clang::Stmt*);
