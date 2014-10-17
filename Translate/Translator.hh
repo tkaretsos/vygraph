@@ -5,6 +5,7 @@
 #include <sstream>
 #include <utility>
 
+#include "clang/Analysis/Analyses/Dominators.h"
 #include "clang/Analysis/AnalysisContext.h"
 #include "clang/Analysis/CFG.h"
 #include "clang/AST/ASTContext.h"
@@ -24,6 +25,8 @@ public:
 private:
   clang::ASTContext& context;
   clang::AnalysisDeclContextManager analysisManager;
+  clang::DominatorTree domTree;
+  clang::CFG* cfg;
   std::unique_ptr<clang::AnalysisDeclContext> analysis;
   std::stringstream& outs;
   std::size_t indentLevel;
@@ -31,12 +34,10 @@ private:
   unsigned int pcCounter;
   const unsigned int pcError = -1;
 
-  clang::CFG* getCFG(const clang::FunctionDecl*);
-
   void indent();
   void unindent();
 
-  void beginFunction(const std::string&);
+  void beginFunction(const clang::FunctionDecl*);
   void endFunction();
 
   void insertStmt(const clang::Stmt*, const LocationPair* = nullptr);

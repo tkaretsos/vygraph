@@ -45,8 +45,7 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
 
 void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
-  beginFunction(funcDecl->getNameAsString());
-  auto cfg = getCFG(funcDecl);
+  beginFunction(funcDecl);
 
   auto& curBlock = cfg->getEntry();
   while (!curBlock.succ_empty()) {
@@ -75,12 +74,6 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   endFunction();
 }
 
-CFG*
-Translator::getCFG(const FunctionDecl* funcDecl) {
-  analysis.reset(new AnalysisDeclContext(&analysisManager, funcDecl));
-  return analysis->getCFG();
-}
-
 void
 Translator::indent() {
   indentStr.assign(2 * ++indentLevel, ' ');
@@ -92,8 +85,12 @@ Translator::unindent() {
 }
 
 void
-Translator::beginFunction(const std::string& functionName) {
-  outs << indentStr << functionName << " {" << endl;
+Translator::beginFunction(const FunctionDecl* funcDecl) {
+  analysis.reset(new AnalysisDeclContext(&analysisManager, funcDecl));
+  cfg = analysis->getCFG();
+  domTree.buildDominatorTree(*analysis);
+
+  outs << indentStr << funcDecl->getNameAsString() << " {" << endl;
   indent();
 }
 
