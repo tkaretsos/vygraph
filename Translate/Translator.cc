@@ -54,11 +54,18 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
     auto terminatorCond = curBlock.getTerminatorCondition();
     if (terminatorCond != nullptr) {
       insertSequentialStmts(curBlock.begin(), curBlock.end() - 1);
-      auto branchLoc = pcCounter;
+      auto branchStartLoc = pcCounter;
       insertBranchCondTrue(terminatorCond);
-      insertBranchTargetTrue(**curBlock.succ_begin());
-      auto branchExitLoc = pcCounter;
-      insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, branchExitLoc));
+      if ((*curBlock.succ_rbegin())->getBlockID() == getBranchExitID(curBlock)) {
+        // if there is not an else part
+        insertBranchTargetTrue(**curBlock.succ_begin());
+        insertBranchCondFalse(terminatorCond, LocationPair(branchStartLoc, pcCounter));
+      } else {
+        // if there is an else part
+        insertBranchTargetTrue(**curBlock.succ_begin(), getBranchEndLoc(curBlock));
+        insertBranchCondFalse(terminatorCond, LocationPair(branchStartLoc, pcCounter));
+        insertBranchTargetFalse(**curBlock.succ_rbegin());
+      }
       curBlock = **curBlock.succ_begin();
     } else {
       insertSequentialStmts(curBlock.begin(), curBlock.end());
@@ -142,6 +149,18 @@ Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
 }
 
 void
+Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
+                                  CFGBlock::const_iterator end,
+                                  unsigned int endLoc) {
+  insertSequentialStmts(begin, end - 1);
+  auto cfgStmt = (end - 1)->getAs<CFGStmt>();
+  if (cfgStmt.hasValue()) {
+    LocationPair loc(pcCounter++, endLoc);
+    insertStmt(cfgStmt->getStmt(), &loc);
+  }
+}
+
+void
 Translator::insertBranchCondTrue(const Stmt* condition) {
   string stmtStr(util::RangeToStr(condition->getSourceRange(), context));
   stmtStr.append(";");
@@ -162,8 +181,13 @@ Translator::insertBranchTargetTrue(const CFGBlock& curBlock) {
 }
 
 void
-Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
+Translator::insertBranchTargetTrue(const CFGBlock& curBlock, unsigned int endLoc) {
+  insertSequentialStmts(curBlock.begin(), curBlock.end(), endLoc);
+}
 
+void
+Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
+  insertSequentialStmts(curBlock.begin(), curBlock.end());
 }
 
 unsigned int
@@ -171,6 +195,12 @@ Translator::getBranchExitID(const CFGBlock& curBlock) const {
   auto target = *curBlock.succ_begin();
   auto targetSucc = *target->succ_begin();
   return targetSucc->getBlockID();
+}
+
+unsigned int
+Translator::getBranchEndLoc(const CFGBlock& curBlock) const {
+  return pcCounter + (*curBlock.succ_begin())->size()
+                   + (*curBlock.succ_rbegin())->size();
 }
 
 ostream& operator<<(ostream& os, const Translator::LocationPair& loc) {
