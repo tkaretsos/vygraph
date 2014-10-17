@@ -46,8 +46,7 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
 void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   beginFunction(funcDecl->getNameAsString());
-  CFG* cfg = CFG::buildCFG(funcDecl, funcDecl->getBody(),
-                           &context, CFG::BuildOptions());
+  auto cfg = getCFG(funcDecl);
 
   auto& curBlock = cfg->getEntry();
   while (!curBlock.succ_empty()) {
@@ -73,8 +72,13 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
     curBlock = **curBlock.succ_begin();
   }
 
-  delete cfg;
   endFunction();
+}
+
+CFG*
+Translator::getCFG(const FunctionDecl* funcDecl) {
+  analysis.reset(new AnalysisDeclContext(&analysisManager, funcDecl));
+  return analysis->getCFG();
 }
 
 void

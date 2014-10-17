@@ -1,9 +1,11 @@
 #ifndef VYGRAPH_TRANSLATOR_HH
 #define VYGRAPH_TRANSLATOR_HH
 
+#include <memory>
 #include <sstream>
 #include <utility>
 
+#include "clang/Analysis/AnalysisContext.h"
 #include "clang/Analysis/CFG.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
@@ -21,11 +23,15 @@ public:
 
 private:
   clang::ASTContext& context;
+  clang::AnalysisDeclContextManager analysisManager;
+  std::unique_ptr<clang::AnalysisDeclContext> analysis;
   std::stringstream& outs;
   std::size_t indentLevel;
   std::string indentStr;
   unsigned int pcCounter;
   const unsigned int pcError = -1;
+
+  clang::CFG* getCFG(const clang::FunctionDecl*);
 
   void indent();
   void unindent();
