@@ -192,9 +192,13 @@ Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
 
 unsigned int
 Translator::getBranchExitID(const CFGBlock& curBlock) const {
-  auto target = *curBlock.succ_begin();
-  auto targetSucc = *target->succ_begin();
-  return targetSucc->getBlockID();
+   auto lhs = curBlock.succ_begin();
+   auto rhs = curBlock.succ_begin() + 1;
+   while ((*lhs)->getBlockID() != (*rhs)->getBlockID()) {
+     lhs = (*lhs)->succ_begin();
+     swap(lhs, rhs);
+   }
+   return (*lhs)->getBlockID();
 }
 
 unsigned int
