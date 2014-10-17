@@ -193,9 +193,11 @@ Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
 
 unsigned int
 Translator::getBranchExitID(const CFGBlock& curBlock) const {
-  auto target = *curBlock.succ_begin();
-  auto targetSucc = *target->succ_begin();
-  return targetSucc->getBlockID();
+  auto branchStart = curBlock.succ_begin();
+  auto block = (*branchStart)->succ_begin();
+  while (domTree.dominates(*branchStart, *block))
+    block = (*block)->succ_begin();
+  return (*block)->getBlockID();
 }
 
 unsigned int
