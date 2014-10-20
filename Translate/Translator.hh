@@ -40,22 +40,23 @@ private:
   void beginFunction(const clang::FunctionDecl*);
   void endFunction();
 
+  void insertSubCFG(const clang::CFGBlock&);
+
   void insertStmt(const clang::Stmt*, const LocationPair* = nullptr);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator,
-                             unsigned int);
+                             const unsigned int*);
+
   void insertBranchCondTrue(const clang::Stmt*);
   void insertBranchCondFalse(const clang::Stmt*, const LocationPair&);
-  void insertBranchTargetTrue(const clang::CFGBlock&);
-  void insertBranchTargetTrue(const clang::CFGBlock&, unsigned int);
-  void insertBranchTargetFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
   LocationPair getLocation();
   unsigned int getBranchExitID(const clang::CFGBlock&) const;
-  unsigned int getBranchEndLoc(const clang::CFGBlock&) const;
+
+  bool hasElsePart(const clang::CFGBlock&) const;
 };
 
 std::ostream& operator<<(std::ostream&, const Translator::LocationPair&);

@@ -47,31 +47,27 @@ void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   beginFunction(funcDecl);
 
-  auto& curBlock = cfg->getEntry();
-  while (!curBlock.succ_empty()) {
-    auto terminatorCond = curBlock.getTerminatorCondition();
-    if (terminatorCond != nullptr) {
-      insertSequentialStmts(curBlock.begin(), curBlock.end() - 1);
-      auto branchStartLoc = pcCounter;
-      insertBranchCondTrue(terminatorCond);
-      if ((*curBlock.succ_rbegin())->getBlockID() == getBranchExitID(curBlock)) {
-        // if there is not an else part
-        insertBranchTargetTrue(**curBlock.succ_begin());
-        insertBranchCondFalse(terminatorCond, LocationPair(branchStartLoc, pcCounter));
-      } else {
-        // if there is an else part
-        insertBranchTargetTrue(**curBlock.succ_begin(), getBranchEndLoc(curBlock));
-        insertBranchCondFalse(terminatorCond, LocationPair(branchStartLoc, pcCounter));
-        insertBranchTargetFalse(**curBlock.succ_rbegin());
-      }
-      curBlock = **curBlock.succ_begin();
-    } else {
-      insertSequentialStmts(curBlock.begin(), curBlock.end());
-    }
-    curBlock = **curBlock.succ_begin();
-  }
+  insertSubCFG(**cfg->getEntry().succ_begin());
 
   endFunction();
+}
+
+void
+Translator::insertSubCFG(const CFGBlock& block) {
+  auto terminatorCond = block.getTerminatorCondition();
+  if (terminatorCond != nullptr) {
+    insertSequentialStmts(block.begin(), block.end() - 1);
+    auto branchLoc = pcCounter;
+    insertBranchCondTrue(terminatorCond);
+    insertSubCFG(**block.succ_begin());
+    insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, pcCounter));
+    insertSubCFG(**block.succ_rbegin());
+    if ((*block.succ_rbegin())->succ_size() != 0 &&
+        domTree.dominates(&block, *(*block.succ_rbegin())->succ_begin()))
+      insertSubCFG(**(*block.succ_rbegin())->succ_begin());
+  } else {
+    insertSequentialStmts(block.begin(), block.end());
+  }
 }
 
 void
@@ -115,7 +111,8 @@ Translator::getLocation() {
   return location;
 }
 
-void Translator::insertStmt (const Stmt* stmt, const LocationPair* location) {
+void
+Translator::insertStmt(const Stmt* stmt, const LocationPair* location) {
   switch (stmt->getStmtClass()) {
     default: {
       string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
@@ -152,12 +149,16 @@ Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
 void
 Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
                                   CFGBlock::const_iterator end,
-                                  unsigned int endLoc) {
-  insertSequentialStmts(begin, end - 1);
-  auto cfgStmt = (end - 1)->getAs<CFGStmt>();
-  if (cfgStmt.hasValue()) {
-    LocationPair loc(pcCounter++, endLoc);
-    insertStmt(cfgStmt->getStmt(), &loc);
+                                  const unsigned int* endLoc) {
+  if (endLoc == nullptr) {
+    insertSequentialStmts(begin, end);
+  } else {
+    insertSequentialStmts(begin, end - 1);
+    auto cfgStmt = (end - 1)->getAs<CFGStmt>();
+    if (cfgStmt.hasValue()) {
+      LocationPair loc(pcCounter++, *endLoc);
+      insertStmt(cfgStmt->getStmt(), &loc);
+    }
   }
 }
 
@@ -176,21 +177,6 @@ Translator::insertBranchCondFalse(const Stmt* condition, const LocationPair& loc
   outs << indentStr << locs << stmtStr << endl;
 }
 
-void
-Translator::insertBranchTargetTrue(const CFGBlock& curBlock) {
-  insertSequentialStmts(curBlock.begin(), curBlock.end());
-}
-
-void
-Translator::insertBranchTargetTrue(const CFGBlock& curBlock, unsigned int endLoc) {
-  insertSequentialStmts(curBlock.begin(), curBlock.end(), endLoc);
-}
-
-void
-Translator::insertBranchTargetFalse(const CFGBlock& curBlock) {
-  insertSequentialStmts(curBlock.begin(), curBlock.end());
-}
-
 unsigned int
 Translator::getBranchExitID(const CFGBlock& curBlock) const {
   auto branchStart = curBlock.succ_begin();
@@ -200,10 +186,9 @@ Translator::getBranchExitID(const CFGBlock& curBlock) const {
   return (*block)->getBlockID();
 }
 
-unsigned int
-Translator::getBranchEndLoc(const CFGBlock& curBlock) const {
-  return pcCounter + (*curBlock.succ_begin())->size()
-                   + (*curBlock.succ_rbegin())->size();
+bool
+Translator::hasElsePart(const CFGBlock& block) const {
+  return (*block.succ_rbegin())->getBlockID() != getBranchExitID(block);
 }
 
 ostream& operator<<(ostream& os, const Translator::LocationPair& loc) {
