@@ -14,6 +14,7 @@ int main () {
   } else {
     x = x - 3;
     x = 2 * x;
+    x += 3;
   }
   x--;
   return 0;
