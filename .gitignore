@@ -16,6 +16,7 @@ build
 *.autosave
 *.kdev4
 *.kate-swp
+*.expected
 
 ############
 # Qt Creator
