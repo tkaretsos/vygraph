@@ -13,7 +13,7 @@ int main () {
     if (a) {
       x = 2;
     }
-    x++;
+    x = x / 5;
   } else {
     x = x - 3;
     if (b) {

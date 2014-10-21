@@ -12,6 +12,11 @@ int main () {
     x = x + 3;
     if (a) {
       x = 2;
+      if (b) {
+        x += 2;
+      } else {
+        x -= 2;
+      }
     } else {
       x = 3;
     }
