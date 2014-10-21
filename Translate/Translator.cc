@@ -62,9 +62,8 @@ Translator::insertSubCFG(const CFGBlock& block) {
     insertSubCFG(**block.succ_begin());
     insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, pcCounter));
     insertSubCFG(**block.succ_rbegin());
-    if ((*block.succ_rbegin())->succ_size() != 0 &&
-        domTree.dominates(&block, *(*block.succ_rbegin())->succ_begin()))
-      insertSubCFG(**(*block.succ_rbegin())->succ_begin());
+    if (hasElsePart(block))
+      insertSubCFG(getBranchExitBlock(block));
   } else {
     insertSequentialStmts(block.begin(), block.end());
   }
@@ -177,18 +176,18 @@ Translator::insertBranchCondFalse(const Stmt* condition, const LocationPair& loc
   outs << indentStr << locs << stmtStr << endl;
 }
 
-unsigned int
-Translator::getBranchExitID(const CFGBlock& curBlock) const {
+const CFGBlock&
+Translator::getBranchExitBlock(const CFGBlock& curBlock) const {
   auto branchStart = curBlock.succ_begin();
   auto block = (*branchStart)->succ_begin();
   while (domTree.dominates(*branchStart, *block))
     block = (*block)->succ_begin();
-  return (*block)->getBlockID();
+  return **block;
 }
 
 bool
 Translator::hasElsePart(const CFGBlock& block) const {
-  return (*block.succ_rbegin())->getBlockID() != getBranchExitID(block);
+  return (*block.succ_rbegin())->getBlockID() != getBranchExitBlock(block).getBlockID();
 }
 
 ostream& operator<<(ostream& os, const Translator::LocationPair& loc) {

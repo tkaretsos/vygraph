@@ -54,7 +54,7 @@ private:
 
   void replaceAssignOp(std::string&) const;
   LocationPair getLocation();
-  unsigned int getBranchExitID(const clang::CFGBlock&) const;
+  const clang::CFGBlock& getBranchExitBlock(const clang::CFGBlock&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
 };
