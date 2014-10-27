@@ -10,6 +10,16 @@ int main () {
   int x = 0;
   if (x == 0) {
     x = x + 3;
+    if (a) {
+      x = 2;
+      if (b) {
+        x += 2;
+      } else {
+        x -= 2;
+      }
+    } else {
+      x = 3;
+    }
     x++;
   } else {
     x = x - 3;
@@ -18,6 +28,7 @@ int main () {
     } else {
       x = 3;
     }
+    x++;
   }
   x--;
   return 0;
