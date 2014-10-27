@@ -40,7 +40,9 @@ private:
   void beginFunction(const clang::FunctionDecl*);
   void endFunction();
 
-  void insertSubCFG(const clang::CFGBlock&);
+  void insertSubCFG(const clang::CFGBlock&,
+                    const unsigned int* = nullptr,
+                    const unsigned int* = nullptr);
 
   void insertStmt(const clang::Stmt*, const LocationPair* = nullptr);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,

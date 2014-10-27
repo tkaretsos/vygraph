@@ -53,19 +53,27 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
 }
 
 void
-Translator::insertSubCFG(const CFGBlock& block) {
+Translator::insertSubCFG(const CFGBlock& block,
+                         const unsigned int* startLoc,
+                         const unsigned int* endLoc) {
   auto terminatorCond = block.getTerminatorCondition();
   if (terminatorCond != nullptr) {
-    insertSequentialStmts(block.begin(), block.end() - 1);
+    insertSequentialStmts(block.begin(), block.end() - 1, startLoc, nullptr);
     auto branchLoc = pcCounter;
     insertBranchCondTrue(terminatorCond);
     insertSubCFG(**block.succ_begin());
-    insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, pcCounter));
-    insertSubCFG(**block.succ_rbegin());
-    if (hasElsePart(block))
-      insertSubCFG(getBranchExitBlock(block));
+    auto targetEndLoc = pcCounter;
+    if (hasElsePart(block)) {
+      insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, ++pcCounter));
+      insertSubCFG(**block.succ_rbegin(), nullptr, (endLoc) ? endLoc : &targetEndLoc);
+    } else {
+      insertBranchCondFalse(terminatorCond, LocationPair(branchLoc, pcCounter++));
+    }
+    if (domTree.dominates(&block, &getBranchExitBlock(block))) {
+      insertSubCFG(getBranchExitBlock(block), &targetEndLoc, endLoc);
+    }
   } else {
-    insertSequentialStmts(block.begin(), block.end());
+    insertSequentialStmts(block.begin(), block.end(), startLoc, endLoc);
   }
 }
 
