@@ -47,6 +47,7 @@ private:
                              clang::CFGBlock::const_iterator);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator,
+                             const unsigned int*,
                              const unsigned int*);
 
   void insertBranchCondTrue(const clang::Stmt*);

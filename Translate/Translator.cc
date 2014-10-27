@@ -91,6 +91,7 @@ Translator::beginFunction(const FunctionDecl* funcDecl) {
 
 void
 Translator::endFunction() {
+  domTree.releaseMemory();
   unindent();
   outs << indentStr << "}" << endl;
 }
@@ -148,15 +149,43 @@ Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
 void
 Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
                                   CFGBlock::const_iterator end,
+                                  const unsigned int* startLoc,
                                   const unsigned int* endLoc) {
-  if (endLoc == nullptr) {
+
+  if (startLoc == nullptr && endLoc == nullptr) {
     insertSequentialStmts(begin, end);
-  } else {
+  } else if (startLoc == nullptr) {
     insertSequentialStmts(begin, end - 1);
     auto cfgStmt = (end - 1)->getAs<CFGStmt>();
     if (cfgStmt.hasValue()) {
       LocationPair loc(pcCounter++, *endLoc);
       insertStmt(cfgStmt->getStmt(), &loc);
+    }
+  } else if (endLoc == nullptr) {
+    auto cfgStmt = begin->getAs<CFGStmt>();
+    if (cfgStmt.hasValue()) {
+      LocationPair loc(*startLoc, pcCounter); // no pcCounter++
+      insertStmt(cfgStmt->getStmt(), &loc);
+    }
+  } else {
+    if ((end - begin) == 1) {
+      auto cfgStmt = begin->getAs<CFGStmt>();
+      if (cfgStmt.hasValue()) {
+        LocationPair loc(*startLoc, *endLoc);
+        insertStmt(cfgStmt->getStmt(), &loc);
+      }
+    } else {
+      auto cfgStmt = begin->getAs<CFGStmt>();
+      if (cfgStmt.hasValue()) {
+        LocationPair loc(*startLoc, pcCounter++);
+        insertStmt(cfgStmt->getStmt(), &loc);
+      }
+      insertSequentialStmts(begin + 1, end - 1);
+      cfgStmt = (end - 1)->getAs<CFGStmt>();
+      if (cfgStmt.hasValue()) {
+        LocationPair loc(pcCounter++, *endLoc);
+        insertStmt(cfgStmt->getStmt(), &loc);
+      }
     }
   }
 }
