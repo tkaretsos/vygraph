@@ -46,7 +46,7 @@ private:
   void insertTerminatorFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
-  const clang::CFGBlock& getBranchExitBlock(const clang::CFGBlock&) const;
+  const clang::CFGBlock& getPostDominator(const clang::CFGBlock&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
   bool hasTerminator(const clang::CFGBlock&) const;

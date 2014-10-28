@@ -66,10 +66,9 @@ Translator::insertSubCFG(const CFGBlock& block) {
   if (hasTerminator(block)) {
     insertSubCFG(**block.succ_begin());
     insertTerminatorFalse(block);
-    if (hasElsePart(block))
-      insertSubCFG(**block.succ_rbegin());
-    if (domTree.dominates(&block, &getBranchExitBlock(block))) {
-      insertSubCFG(getBranchExitBlock(block));
+    insertSubCFG(**block.succ_rbegin());
+    if (domTree.dominates(&block, &getPostDominator(block))) {
+      insertSubCFG(getPostDominator(block));
     }
   } else if (domTree.dominates(&block, *block.succ_begin())) {
       insertSubCFG(**block.succ_begin());
@@ -153,17 +152,17 @@ Translator::insertTerminatorFalse(const CFGBlock& block) {
 }
 
 const CFGBlock&
-Translator::getBranchExitBlock(const CFGBlock& curBlock) const {
+Translator::getPostDominator(const CFGBlock& curBlock) const {
   auto branchStart = curBlock.succ_begin();
-  auto block = (*branchStart)->succ_begin();
+  auto block = (*branchStart)->succ_rbegin();
   while (domTree.dominates(*branchStart, *block))
-    block = (*block)->succ_begin();
+    block = (*block)->succ_rbegin();
   return **block;
 }
 
 bool
 Translator::hasElsePart(const CFGBlock& block) const {
-  return (*block.succ_rbegin())->getBlockID() != getBranchExitBlock(block).getBlockID();
+  return (*block.succ_rbegin())->getBlockID() != getPostDominator(block).getBlockID();
 }
 
 string
