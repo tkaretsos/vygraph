@@ -160,11 +160,6 @@ Translator::getPostDominator(const CFGBlock& curBlock) const {
   return **block;
 }
 
-bool
-Translator::hasElsePart(const CFGBlock& block) const {
-  return (*block.succ_rbegin())->getBlockID() != getPostDominator(block).getBlockID();
-}
-
 string
 Translator::getLocString(const CFGBlock& block) {
   string ret(analyzer.getCurrentLoc(block) + " -> ");
