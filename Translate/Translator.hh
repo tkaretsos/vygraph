@@ -11,6 +11,8 @@
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
 
+#include "CFGAnalyzer.hh"
+
 namespace vy {
 
 class Translator {
@@ -33,6 +35,7 @@ private:
   std::string indentStr;
   unsigned int pcCounter;
   const unsigned int pcError = -1;
+  CFGAnalyzer analyzer;
 
   void indent();
   void unindent();
@@ -40,11 +43,10 @@ private:
   void beginFunction(const clang::FunctionDecl*);
   void endFunction();
 
-  void insertSubCFG(const clang::CFGBlock&,
-                    const unsigned int* = nullptr,
-                    const unsigned int* = nullptr);
+  void insertSubCFG(const clang::CFGBlock&);
 
   void insertStmt(const clang::Stmt*, const LocationPair* = nullptr);
+  void insertSequentialStmts(const clang::CFGBlock&);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
                              clang::CFGBlock::const_iterator);
   void insertSequentialStmts(clang::CFGBlock::const_iterator,
@@ -53,13 +55,15 @@ private:
                              const unsigned int*);
 
   void insertBranchCondTrue(const clang::Stmt*);
-  void insertBranchCondFalse(const clang::Stmt*, const LocationPair&);
+  void insertBranchCondFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
   LocationPair getLocation();
   const clang::CFGBlock& getBranchExitBlock(const clang::CFGBlock&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
+  bool hasTerminator(const clang::CFGBlock&) const;
+  std::string getLocString(const clang::CFGBlock&);
 };
 
 std::ostream& operator<<(std::ostream&, const Translator::LocationPair&);
