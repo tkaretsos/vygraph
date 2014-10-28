@@ -54,6 +54,14 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
 
 void
 Translator::insertSubCFG(const CFGBlock& block) {
+
+  if (block.getBlockID() == cfg->getExit().getBlockID())
+    return;
+  if (analyzer.isInserted(block))
+    return;
+  else
+    analyzer.setInsertedBlock(block);
+
   insertSequentialStmts(block);
   if (hasTerminator(block)) {
     insertSubCFG(**block.succ_begin());
@@ -63,6 +71,8 @@ Translator::insertSubCFG(const CFGBlock& block) {
     if (domTree.dominates(&block, &getBranchExitBlock(block))) {
       insertSubCFG(getBranchExitBlock(block));
     }
+  } else if (domTree.dominates(&block, *block.succ_begin())) {
+      insertSubCFG(**block.succ_begin());
   }
 }
 
@@ -107,7 +117,8 @@ Translator::insertSequentialStmts(const CFGBlock& block) {
     if (auto cfgStmt = elem->getAs<CFGStmt>()) {
       switch (cfgStmt->getStmt()->getStmtClass()) {
         default: {
-          string stmtStr(util::RangeToStr(cfgStmt->getStmt()->getSourceRange(), context));
+          string stmtStr(util::RangeToStr(cfgStmt->getStmt()->getSourceRange(),
+                                          context));
           replaceAssignOp(stmtStr);
           stmtStr.append(";");
           outs << indentStr << getLocString(block) << stmtStr << endl;
@@ -136,7 +147,7 @@ Translator::insertTerminatorFalse(const CFGBlock& block) {
   stmtStr.append(");");
 
   string loc(analyzer.getLastLoc(block) + " -> ");
-  loc.append(analyzer.getFirstLoc(**block.succ_rbegin()) + ": ");
+  loc.append(analyzer.getFirstAvailableLoc(**block.succ_rbegin()) + ": ");
 
   outs << indentStr << loc << stmtStr << endl;
 }
@@ -161,7 +172,7 @@ Translator::getLocString(const CFGBlock& block) {
   if (analyzer.hasNextLoc(block)) {
     ret.append(analyzer.getNextLoc(block));
   } else {
-    ret.append(analyzer.getFirstLoc(**block.succ_begin()));
+    ret.append(analyzer.getFirstAvailableLoc(**block.succ_begin()));
   }
   ret.append(": ");
   return ret;
