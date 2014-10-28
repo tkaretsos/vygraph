@@ -29,6 +29,14 @@ CFGAnalyzer::getFirstLoc(const CFGBlock& block) const {
 }
 
 const string&
+CFGAnalyzer::getFirstAvailableLoc(const CFGBlock& block) const {
+  auto nextBlock = &block;
+  while (locations.at(nextBlock->getBlockID()).size() == 0)
+    nextBlock = *nextBlock->succ_begin();
+  return getFirstLoc(*nextBlock);
+}
+
+const string&
 CFGAnalyzer::getLastLoc(const CFGBlock& block) const {
   return locations.at(block.getBlockID()).back();
 }
@@ -46,6 +54,19 @@ CFGAnalyzer::getNextLoc(const CFGBlock& block) {
 bool
 CFGAnalyzer::hasNextLoc(const CFGBlock& block) const {
   return currLocs.at(block.getBlockID()) + 1 != locations.at(block.getBlockID()).end();
+}
+
+void
+CFGAnalyzer::setInsertedBlock(const CFGBlock& block, bool inserted) {
+  insertedBlocks[block.getBlockID()] = inserted;
+}
+
+bool
+CFGAnalyzer::isInserted(const CFGBlock& block) const {
+  auto found = insertedBlocks.find(block.getBlockID());
+  if (found != insertedBlocks.end())
+    return found->second;
+  return false;
 }
 
 }
