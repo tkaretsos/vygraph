@@ -1,7 +1,5 @@
 #include "CFGAnalyzer.hh"
-
 #include <iostream>
-
 namespace vy {
 
 using namespace clang;
@@ -67,6 +65,16 @@ CFGAnalyzer::isInserted(const CFGBlock& block) const {
   if (found != insertedBlocks.end())
     return found->second;
   return false;
+}
+
+void
+CFGAnalyzer::print() const {
+  for (auto& p : locations) {
+    cout << p.first << " -> ";
+    for (auto v : p.second)
+      cout << v << " ";
+    cout << endl;
+  }
 }
 
 }

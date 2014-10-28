@@ -21,6 +21,7 @@ public:
 
   void setInsertedBlock(const clang::CFGBlock&, bool = true);
   bool isInserted(const clang::CFGBlock&) const;
+  void print() const;
 
 private:
   unsigned int pcCounter = 0;
