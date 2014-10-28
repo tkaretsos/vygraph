@@ -14,7 +14,7 @@ using namespace clang;
 using namespace std;
 
 Translator::Translator(stringstream& sstream, ASTContext& context)
-  : context(context), outs(sstream), indentLevel(0), pcCounter(0)
+  : context(context), outs(sstream), indentLevel(0)
 { }
 
 void
@@ -46,8 +46,7 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
 void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   beginFunction(funcDecl);
-cfg->dump(context.getLangOpts(), true);
-  analyzer.analyze(cfg);
+
   insertSubCFG(**cfg->getEntry().succ_begin());
 
   endFunction();
@@ -58,7 +57,7 @@ Translator::insertSubCFG(const CFGBlock& block) {
   insertSequentialStmts(block);
   if (hasTerminator(block)) {
     insertSubCFG(**block.succ_begin());
-    insertBranchCondFalse(block);
+    insertTerminatorFalse(block);
     if (hasElsePart(block))
       insertSubCFG(**block.succ_rbegin());
     if (domTree.dominates(&block, &getBranchExitBlock(block))) {
@@ -81,6 +80,7 @@ void
 Translator::beginFunction(const FunctionDecl* funcDecl) {
   analysis.reset(new AnalysisDeclContext(&analysisManager, funcDecl));
   cfg = analysis->getCFG();
+  analyzer.analyze(cfg);
   domTree.buildDominatorTree(*analysis);
 
   outs << indentStr << funcDecl->getNameAsString() << " {" << endl;
@@ -99,37 +99,6 @@ Translator::replaceAssignOp(std::string& expr) const {
   auto found = expr.find('=');
   if (found != string::npos)
     expr.insert(found, ":");
-}
-
-Translator::LocationPair
-Translator::getLocation() {
-  LocationPair location;
-  location.first = pcCounter;
-  location.second = ++pcCounter;
-  return location;
-}
-
-void
-Translator::insertStmt(const Stmt* stmt, const LocationPair*) {
-  switch (stmt->getStmtClass()) {
-    default: {
-      string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
-      replaceAssignOp(stmtStr);
-      stmtStr.append(";");
-      outs << indentStr << stmtStr << endl;
-      break;
-    }
-
-    case Stmt::DeclStmtClass: {
-      auto declStmt = cast<DeclStmt>(stmt);
-      if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl()))
-        translateVarDecl(varDecl);
-      break;
-    }
-
-    case Stmt::ReturnStmtClass:
-      break;
-  }
 }
 
 void
@@ -160,74 +129,14 @@ Translator::insertSequentialStmts(const CFGBlock& block) {
 }
 
 void
-Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
-                                  CFGBlock::const_iterator end) {
-  for (auto element = begin; element != end; ++element) {
-    auto cfgStmt = element->getAs<CFGStmt>();
-    if (cfgStmt.hasValue()) {
-      insertStmt(cfgStmt->getStmt());
-    }
-  }
-}
-
-void
-Translator::insertSequentialStmts(CFGBlock::const_iterator begin,
-                                  CFGBlock::const_iterator end,
-                                  const unsigned int* startLoc,
-                                  const unsigned int* endLoc) {
-
-  if (startLoc == nullptr && endLoc == nullptr) {
-    insertSequentialStmts(begin, end);
-  } else if (startLoc == nullptr) {
-    insertSequentialStmts(begin, end - 1);
-    auto cfgStmt = (end - 1)->getAs<CFGStmt>();
-    if (cfgStmt.hasValue()) {
-      LocationPair loc(pcCounter++, *endLoc);
-      insertStmt(cfgStmt->getStmt(), &loc);
-    }
-  } else if (endLoc == nullptr) {
-    auto cfgStmt = begin->getAs<CFGStmt>();
-    if (cfgStmt.hasValue()) {
-      LocationPair loc(*startLoc, pcCounter); // no pcCounter++
-      insertStmt(cfgStmt->getStmt(), &loc);
-    }
-  } else {
-    if ((end - begin) == 1) {
-      auto cfgStmt = begin->getAs<CFGStmt>();
-      if (cfgStmt.hasValue()) {
-        LocationPair loc(*startLoc, *endLoc);
-        insertStmt(cfgStmt->getStmt(), &loc);
-      }
-    } else {
-      auto cfgStmt = begin->getAs<CFGStmt>();
-      if (cfgStmt.hasValue()) {
-        LocationPair loc(*startLoc, pcCounter++);
-        insertStmt(cfgStmt->getStmt(), &loc);
-      }
-      insertSequentialStmts(begin + 1, end - 1);
-      cfgStmt = (end - 1)->getAs<CFGStmt>();
-      if (cfgStmt.hasValue()) {
-        LocationPair loc(pcCounter++, *endLoc);
-        insertStmt(cfgStmt->getStmt(), &loc);
-      }
-    }
-  }
-}
-
-void
-Translator::insertBranchCondTrue(const Stmt* condition) {
-  string stmtStr(util::RangeToStr(condition->getSourceRange(), context));
-  stmtStr.append(";");
-  outs << indentStr << getLocation() << stmtStr << endl;
-}
-
-void
-Translator::insertBranchCondFalse(const CFGBlock& block) {
-  string stmtStr(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(), context));
+Translator::insertTerminatorFalse(const CFGBlock& block) {
+  string stmtStr(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
+                                  context));
   stmtStr.insert(0, "!(");
   stmtStr.append(");");
 
-  string loc(analyzer.getLastLoc(block) + " -> " + analyzer.getFirstLoc(**block.succ_rbegin()) + ": ");
+  string loc(analyzer.getLastLoc(block) + " -> ");
+  loc.append(analyzer.getFirstLoc(**block.succ_rbegin()) + ": ");
 
   outs << indentStr << loc << stmtStr << endl;
 }
@@ -261,11 +170,6 @@ Translator::getLocString(const CFGBlock& block) {
 bool
 Translator::hasTerminator(const CFGBlock& block) const {
   return block.getTerminatorCondition() != nullptr;
-}
-
-ostream& operator<<(ostream& os, const Translator::LocationPair& loc) {
-  os << "pc" << loc.first << " -> pc" << loc.second << ": ";
-  return os;
 }
 
 } // namespace vy
