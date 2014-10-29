@@ -11,7 +11,7 @@ llvm-clang-*
 vygraph
 build
 *.o
-*.vy.c
+*.inlined.c
 *.vyc
 *.autosave
 *.kdev4
