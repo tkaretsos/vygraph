@@ -11,9 +11,8 @@ using namespace clang;
 using namespace std;
 
 InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
-  : rewriter(rewriter), context(context) {
-  opts.RemoveLineIfEmpty = true;
-}
+  : rewriter(rewriter), context(context)
+{ }
 
 bool
 InlineASTVisitor::VisitCallExpr(CallExpr* call) {

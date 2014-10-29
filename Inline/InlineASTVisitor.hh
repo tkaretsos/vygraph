@@ -5,14 +5,17 @@
 #include <vector>
 
 #include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "../Utility/ClangBaseWrapper.hh"
+#include "Utility/ClangBaseWrapper.hh"
 
 namespace vy {
 
 class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
+public:
+  InlineASTVisitor(clang::Rewriter&, clang::ASTContext&);
+  bool VisitCallExpr(clang::CallExpr*);
+
+private:
   clang::Rewriter& rewriter;
-  clang::Rewriter::RewriteOptions opts;
   clang::ASTContext& context;
 
   void noArgsNoRet(clang::CallExpr*,
@@ -26,13 +29,8 @@ class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
 
   void findSubstitutions(clang::Stmt*,
                          std::vector<util::ClangBaseWrapper>&) const;
-
   void replaceVarsInString(clang::Stmt*, std::string&,
                            const std::map<std::string, std::string>&) const;
-
-public:
-  InlineASTVisitor(clang::Rewriter&, clang::ASTContext&);
-  bool VisitCallExpr(clang::CallExpr*);
 };
 
 } // namespace vy
