@@ -31,6 +31,10 @@ private:
                          std::vector<util::ClangBaseWrapper>&) const;
   void replaceVarsInString(clang::Stmt*, std::string&,
                            const std::map<std::string, std::string>&) const;
+
+  void insertStmt(const clang::Stmt*, const clang::SourceLocation&,
+                  std::string&) const;
+  void insertReturnStmt(const clang::SourceRange&, std::string&) const;
 };
 
 } // namespace vy

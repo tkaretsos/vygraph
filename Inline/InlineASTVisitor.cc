@@ -56,11 +56,7 @@ InlineASTVisitor::noArgsNoRet(CallExpr* call,
       continue;
     string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
     replaceVarsInString(*s, insertStr, subMap);
-    if (isa<Expr>(*s) || isa<DoStmt>(*s))
-      insertStr.append(";");
-    insertStr.append("\n");
-
-    rewriter.InsertText(call->getLocStart(), insertStr, true, true);
+    insertStmt(*s, call->getLocStart(), insertStr);
   }
 }
 
@@ -71,24 +67,17 @@ InlineASTVisitor::noArgsNoRet(CallExpr* call,
 void
 InlineASTVisitor::noArgsWithRet(CallExpr* call,
                                 const map<string, string>& subMap) const {
-  string callReplacement;
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
     string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
     replaceVarsInString(*s, insertStr, subMap);
     if (isa<ReturnStmt>(*s)) {
-      callReplacement.push_back('(');
-      callReplacement.append(insertStr.begin() + 7, insertStr.end());
-      callReplacement.push_back(')');
+      insertReturnStmt(call->getSourceRange(), insertStr);
     } else {
-      if (isa<Expr>(*s) || isa<DoStmt>(*s))
-        insertStr.append(";");
-      insertStr.append("\n");
-      rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
+      insertStmt(*s, functionMgr.getStmtLoc(call), insertStr);
     }
   }
-  rewriter.ReplaceText(call->getSourceRange(), callReplacement);
 }
 
 // eg: void foo(<type> param1, ...) { ... return <expr>; }
@@ -116,10 +105,7 @@ InlineASTVisitor::argsNoRet(CallExpr* call,
       continue;
     string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
     replaceVarsInString(*s, insertStr, subMap);
-    if (isa<Expr>(*s) || isa<DoStmt>(*s))
-      insertStr.append(";");
-    insertStr.append("\n");
-    rewriter.InsertText(call->getLocStart(), insertStr, true, true);
+    insertStmt(*s, call->getLocStart(), insertStr);
   }
 }
 
@@ -130,7 +116,6 @@ InlineASTVisitor::argsNoRet(CallExpr* call,
 void
 InlineASTVisitor::argsWithRet(CallExpr* call,
                               const map<string, string>& subMap) const {
-  string callReplacement;
 
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
@@ -145,17 +130,11 @@ InlineASTVisitor::argsWithRet(CallExpr* call,
     string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
     replaceVarsInString(*s, insertStr, subMap);
     if (isa<ReturnStmt>(*s)) {
-      callReplacement.push_back('(');
-      callReplacement.append(insertStr.begin() + 7, insertStr.end());
-      callReplacement.push_back(')');
+      insertReturnStmt(call->getSourceRange(), insertStr);
     } else {
-      if (isa<Expr>(*s) || isa<DoStmt>(*s))
-        insertStr.append(";");
-      insertStr.append("\n");
-      rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
+      insertStmt(*s, functionMgr.getStmtLoc(call), insertStr);
     }
   }
-  rewriter.ReplaceText(call->getSourceRange(), callReplacement);
 }
 
 void
@@ -189,6 +168,23 @@ InlineASTVisitor::replaceVarsInString(Stmt* stmt, string& str,
       str.replace(begin, begin + found->first.length(), found->second);
     }
   }
+}
+
+void
+InlineASTVisitor::insertStmt(const Stmt* s, const SourceLocation& loc,
+                             string& stmtStr) const {
+  if (isa<Expr>(s) || isa<DoStmt>(s))
+    stmtStr.append(";");
+  stmtStr.append("\n");
+  rewriter.InsertText(loc, stmtStr, true, true);
+}
+
+void
+InlineASTVisitor::insertReturnStmt(const SourceRange& range, string& stmtStr) const {
+  string replacement("(");
+  replacement.append(stmtStr.begin() + 7, stmtStr.end());
+  replacement.push_back(')');
+  rewriter.ReplaceText(range, replacement);
 }
 
 } // namespace vy
