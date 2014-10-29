@@ -46,9 +46,7 @@ InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 void
 InlineASTVisitor::noArgsNoRet(CallExpr* call,
                               const map<string, string>& subMap) const {
-  // delete the call text
-  rewriter.RemoveText(call->getSourceRange());
-  rewriter.RemoveText(call->getLocStart(), 1);
+  deleteCallText(call);
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
@@ -87,9 +85,7 @@ InlineASTVisitor::noArgsWithRet(CallExpr* call,
 void
 InlineASTVisitor::argsNoRet(CallExpr* call,
                             const map<string, string>& subMap) const {
-  // delete the call text
-  rewriter.RemoveText(call->getSourceRange());
-  rewriter.RemoveText(call->getLocStart(), 1);
+  deleteCallText(call);
 
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
@@ -185,6 +181,12 @@ InlineASTVisitor::insertReturnStmt(const SourceRange& range, string& stmtStr) co
   replacement.append(stmtStr.begin() + 7, stmtStr.end());
   replacement.push_back(')');
   rewriter.ReplaceText(range, replacement);
+}
+
+void
+InlineASTVisitor::deleteCallText(const CallExpr* call) const {
+  rewriter.RemoveText(call->getSourceRange());
+  rewriter.RemoveText(call->getLocStart(), 1);
 }
 
 } // namespace vy
