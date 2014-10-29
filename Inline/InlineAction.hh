@@ -7,12 +7,13 @@
 namespace vy {
 
 class InlineAction : public clang::ASTFrontendAction {
-  clang::Rewriter rewriter;
 public:
-  InlineAction();
   clang::ASTConsumer* CreateASTConsumer(clang::CompilerInstance&,
                                         llvm::StringRef) override;
   void EndSourceFileAction() override;
+
+private:
+  clang::Rewriter rewriter;
 };
 
 } // namespace vy
