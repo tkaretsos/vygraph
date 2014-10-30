@@ -87,13 +87,7 @@ InlineASTVisitor::argsNoRet(CallExpr* call,
                             const map<string, string>& subMap) const {
   deleteCallText(call);
 
-  auto param = call->getDirectCallee()->param_begin();
-  for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
-    string insertStr((*param)->getOriginalType().getAsString() + " ");
-    insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
-    insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
-    rewriter.InsertText(call->getLocStart(), insertStr, true, true);
-  }
+  insertArguments(call, call->getLocStart(), subMap);
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
@@ -113,13 +107,7 @@ void
 InlineASTVisitor::argsWithRet(CallExpr* call,
                               const map<string, string>& subMap) const {
 
-  auto param = call->getDirectCallee()->param_begin();
-  for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
-    string insertStr((*param)->getOriginalType().getAsString() + " ");
-    insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
-    insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
-    rewriter.InsertText(functionMgr.getStmtLoc(call), insertStr, true, true);
-  }
+  insertArguments(call, functionMgr.getStmtLoc(call), subMap);
 
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto s = body->body_begin(); s != body->body_end(); ++s) {
@@ -181,6 +169,18 @@ InlineASTVisitor::insertReturnStmt(const SourceRange& range, string& stmtStr) co
   replacement.append(stmtStr.begin() + 7, stmtStr.end());
   replacement.push_back(')');
   rewriter.ReplaceText(range, replacement);
+}
+
+void
+InlineASTVisitor::insertArguments(CallExpr* call, const SourceLocation& loc,
+                                  const map<string, string>& subMap) const {
+  auto param = call->getDirectCallee()->param_begin();
+  for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
+    string insertStr((*param)->getOriginalType().getAsString() + " ");
+    insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
+    insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
+    rewriter.InsertText(loc, insertStr, true, true);
+  }
 }
 
 void
