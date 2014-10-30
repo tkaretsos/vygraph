@@ -1,17 +1,15 @@
 #ifndef VYGRAPH_TRANSLATOR_HH
 #define VYGRAPH_TRANSLATOR_HH
 
-#include <memory>
-#include <sstream>
-#include <utility>
-
 #include "clang/Analysis/Analyses/Dominators.h"
-#include "clang/Analysis/AnalysisContext.h"
-#include "clang/Analysis/CFG.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/Decl.h"
 
-#include "CFGAnalyzer.hh"
+#include "Translate/CFGAnalyzer.hh"
+
+namespace clang {
+
+class ASTContext;
+
+}
 
 namespace vy {
 

@@ -1,10 +1,8 @@
 #include "Translator.hh"
 
-#include <iostream>
+#include <sstream>
 
 #include "clang/AST/Expr.h"
-#include "clang/AST/Stmt.h"
-#include "llvm/ADT/Optional.h"
 
 #include "Utility/Functions.hh"
 
