@@ -5,12 +5,6 @@
 
 #include "Translate/CFGAnalyzer.hh"
 
-namespace clang {
-
-class ASTContext;
-
-}
-
 namespace vy {
 
 class Translator {

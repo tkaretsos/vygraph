@@ -4,7 +4,12 @@
 #include <map>
 #include <vector>
 
-#include "clang/Analysis/CFG.h"
+namespace clang {
+
+class CFG;
+class CFGBlock;
+
+}
 
 namespace vy {
 

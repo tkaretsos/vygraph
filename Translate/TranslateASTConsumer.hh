@@ -1,13 +1,9 @@
 #ifndef VYGRAPH_TRANSLATEASTCONSUMER_HH
 #define VYGRAPH_TRANSLATEASTCONSUMER_HH
 
-#include <sstream>
-
 #include "clang/AST/ASTConsumer.h"
-#include "clang/AST/ASTContext.h"
-#include "clang/AST/DeclGroup.h"
 
-#include "Translator.hh"
+#include "Translate/Translator.hh"
 
 namespace vy {
 

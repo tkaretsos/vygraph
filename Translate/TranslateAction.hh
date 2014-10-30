@@ -3,9 +3,6 @@
 
 #include <sstream>
 
-#include "llvm/ADT/StringRef.h"
-#include "clang/AST/ASTConsumer.h"
-#include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendAction.h"
 
 namespace vy {

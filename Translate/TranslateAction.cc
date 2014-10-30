@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "clang/Frontend/CompilerInstance.h"
+
 #include "TranslateASTConsumer.hh"
 
 namespace vy {
