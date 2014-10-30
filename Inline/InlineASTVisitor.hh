@@ -18,15 +18,6 @@ private:
   clang::Rewriter& rewriter;
   clang::ASTContext& context;
 
-  void noArgsNoRet(clang::CallExpr*,
-                   const std::map<std::string, std::string>&) const;
-  void noArgsWithRet(clang::CallExpr*,
-                     const std::map<std::string, std::string>&) const;
-  void argsNoRet(clang::CallExpr*,
-                 const std::map<std::string, std::string>&) const;
-  void argsWithRet(clang::CallExpr*,
-                   const std::map<std::string, std::string>&) const;
-
   void findSubstitutions(clang::Stmt*,
                          std::vector<util::ClangBaseWrapper>&) const;
   void replaceVarsInString(clang::Stmt*, std::string&,
@@ -35,7 +26,7 @@ private:
   void insertStmt(const clang::Stmt*, const clang::SourceLocation&,
                   std::string&) const;
   void insertReturnStmt(const clang::SourceRange&, std::string&) const;
-  void insertArguments(clang::CallExpr*, const clang::SourceLocation&,
+  void insertArguments(clang::CallExpr*,
                        const std::map<std::string, std::string>&) const;
   void insertBody(clang::CallExpr*, const std::map<std::string, std::string>&) const;
 

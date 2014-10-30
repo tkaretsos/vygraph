@@ -23,67 +23,14 @@ InlineASTVisitor::VisitCallExpr(CallExpr* call) {
     for (auto& i : subMap)
       i.second = i.first + "_" + ext;
 
-    if (call->getNumArgs() == 0) {
-      if (functionMgr.isSimpleCall(call))
-        noArgsNoRet(call, subMap);
-      else
-        noArgsWithRet(call, subMap);
-    } else {
-      if (functionMgr.isSimpleCall(call))
-        argsNoRet(call, subMap);
-      else
-        argsWithRet(call, subMap);
-    }
+    if (functionMgr.isSimpleCall(call))
+      deleteCallText(call);
+    if (call->getNumArgs() > 0)
+      insertArguments(call, subMap);
+    insertBody(call, subMap);
   }
 
   return true;
-}
-
-// eg: void foo() { }
-// *code* ...
-// foo();
-// *code* ...
-void
-InlineASTVisitor::noArgsNoRet(CallExpr* call,
-                              const map<string, string>& subMap) const {
-  deleteCallText(call);
-
-  insertBody(call, subMap);
-}
-
-// eg: <nonvoid> foo() { ... return <expr>; }
-// *code* ...
-// x = <expr> <operator> foo() <operator> <expr>;
-// *code* ...
-void
-InlineASTVisitor::noArgsWithRet(CallExpr* call,
-                                const map<string, string>& subMap) const {
-  insertBody(call, subMap);
-}
-
-// eg: void foo(<type> param1, ...) { ... return <expr>; }
-// *code* ...
-// foo(arg1, ...);
-// *code* ...
-void
-InlineASTVisitor::argsNoRet(CallExpr* call,
-                            const map<string, string>& subMap) const {
-  deleteCallText(call);
-
-  insertArguments(call, call->getLocStart(), subMap);
-  insertBody(call, subMap);
-}
-
-// eg: <nonvoid> foo(<type> param1, ...) { ... return <expr>; }
-// *code* ...
-// x = <expr> <operator> foo(arg1, ...) <operator> <expr>;
-// *code* ...
-void
-InlineASTVisitor::argsWithRet(CallExpr* call,
-                              const map<string, string>& subMap) const {
-
-  insertArguments(call, functionMgr.getStmtLoc(call), subMap);
-  insertBody(call, subMap);
 }
 
 void
@@ -137,14 +84,14 @@ InlineASTVisitor::insertReturnStmt(const SourceRange& range, string& stmtStr) co
 }
 
 void
-InlineASTVisitor::insertArguments(CallExpr* call, const SourceLocation& loc,
+InlineASTVisitor::insertArguments(CallExpr* call,
                                   const map<string, string>& subMap) const {
   auto param = call->getDirectCallee()->param_begin();
   for (auto arg = call->arg_begin(); arg != call->arg_end(); ++arg, ++param) {
     string insertStr((*param)->getOriginalType().getAsString() + " ");
     insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
     insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
-    rewriter.InsertText(loc, insertStr, true, true);
+    rewriter.InsertText(functionMgr.getInsertLoc(call), insertStr, true, true);
   }
 }
 
