@@ -118,6 +118,11 @@ FunctionManager::getVarSubs(CallExpr* call) {
   return function->varSubs;
 }
 
+const SourceLocation
+FunctionManager::getInsertLoc(CallExpr* call) {
+  return (isSimpleCall(call)) ? call->getLocStart() : getStmtLoc(call);
+}
+
 void
 FunctionManager::print() {
   for (auto i = userFunctions_.begin(); i != userFunctions_.end(); ++i) {
