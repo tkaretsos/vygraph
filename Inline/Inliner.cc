@@ -107,7 +107,7 @@ Inliner::replaceVarsInString(Stmt* stmt, string& s) {
     auto found = subMap.find(sub.getAsString(rewriter));
     if (found != subMap.end()) {
       auto offset = sub.getLocStart().getRawEncoding() -
-      stmt->getLocStart().getRawEncoding();
+                    stmt->getLocStart().getRawEncoding();
       auto begin = s.begin() + offset;
       s.replace(begin, begin + found->first.length(), found->second);
     }
