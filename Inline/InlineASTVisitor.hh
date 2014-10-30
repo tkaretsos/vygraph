@@ -37,6 +37,7 @@ private:
   void insertReturnStmt(const clang::SourceRange&, std::string&) const;
   void insertArguments(clang::CallExpr*, const clang::SourceLocation&,
                        const std::map<std::string, std::string>&) const;
+  void insertBody(clang::CallExpr*, const std::map<std::string, std::string>&) const;
 
   void deleteCallText(const clang::CallExpr*) const;
 };

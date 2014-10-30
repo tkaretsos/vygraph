@@ -48,14 +48,7 @@ InlineASTVisitor::noArgsNoRet(CallExpr* call,
                               const map<string, string>& subMap) const {
   deleteCallText(call);
 
-  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
-    if (isa<ReturnStmt>(*s))
-      continue;
-    string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
-    replaceVarsInString(*s, insertStr, subMap);
-    insertStmt(*s, call->getLocStart(), insertStr);
-  }
+  insertBody(call, subMap);
 }
 
 // eg: <nonvoid> foo() { ... return <expr>; }
@@ -65,17 +58,7 @@ InlineASTVisitor::noArgsNoRet(CallExpr* call,
 void
 InlineASTVisitor::noArgsWithRet(CallExpr* call,
                                 const map<string, string>& subMap) const {
-
-  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
-    string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
-    replaceVarsInString(*s, insertStr, subMap);
-    if (isa<ReturnStmt>(*s)) {
-      insertReturnStmt(call->getSourceRange(), insertStr);
-    } else {
-      insertStmt(*s, functionMgr.getStmtLoc(call), insertStr);
-    }
-  }
+  insertBody(call, subMap);
 }
 
 // eg: void foo(<type> param1, ...) { ... return <expr>; }
@@ -88,15 +71,7 @@ InlineASTVisitor::argsNoRet(CallExpr* call,
   deleteCallText(call);
 
   insertArguments(call, call->getLocStart(), subMap);
-
-  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
-    if (isa<ReturnStmt>(*s))
-      continue;
-    string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
-    replaceVarsInString(*s, insertStr, subMap);
-    insertStmt(*s, call->getLocStart(), insertStr);
-  }
+  insertBody(call, subMap);
 }
 
 // eg: <nonvoid> foo(<type> param1, ...) { ... return <expr>; }
@@ -108,17 +83,7 @@ InlineASTVisitor::argsWithRet(CallExpr* call,
                               const map<string, string>& subMap) const {
 
   insertArguments(call, functionMgr.getStmtLoc(call), subMap);
-
-  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
-    string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
-    replaceVarsInString(*s, insertStr, subMap);
-    if (isa<ReturnStmt>(*s)) {
-      insertReturnStmt(call->getSourceRange(), insertStr);
-    } else {
-      insertStmt(*s, functionMgr.getStmtLoc(call), insertStr);
-    }
-  }
+  insertBody(call, subMap);
 }
 
 void
@@ -180,6 +145,21 @@ InlineASTVisitor::insertArguments(CallExpr* call, const SourceLocation& loc,
     insertStr.append(subMap.at((*param)->getNameAsString()) + " = ");
     insertStr.append(rewriter.ConvertToString(*arg) + ";\n");
     rewriter.InsertText(loc, insertStr, true, true);
+  }
+}
+
+void
+InlineASTVisitor::insertBody(CallExpr* call,
+                             const map<string, string>& subMap) const {
+  auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
+  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
+    string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
+    replaceVarsInString(*s, insertStr, subMap);
+    if (isa<ReturnStmt>(*s) ) {
+      if (!functionMgr.isSimpleCall(call))
+        insertReturnStmt(call->getSourceRange(), insertStr);
+    } else
+      insertStmt(*s, functionMgr.getInsertLoc(call), insertStr);
   }
 }
 
