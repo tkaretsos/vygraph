@@ -59,19 +59,6 @@ CFGAnalyzer::hasNextLoc(const CFGBlock& block) const {
 }
 
 void
-CFGAnalyzer::setInsertedBlock(const CFGBlock& block, bool inserted) {
-  insertedBlocks[block.getBlockID()] = inserted;
-}
-
-bool
-CFGAnalyzer::isInserted(const CFGBlock& block) const {
-  auto found = insertedBlocks.find(block.getBlockID());
-  if (found != insertedBlocks.end())
-    return found->second;
-  return false;
-}
-
-void
 CFGAnalyzer::print() const {
   for (auto& p : locations) {
     cout << p.first << " -> ";
