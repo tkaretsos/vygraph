@@ -1,5 +1,6 @@
 #include "Translator.hh"
 
+#include <iostream>
 #include <sstream>
 
 #include "clang/AST/Expr.h"
@@ -55,21 +56,19 @@ Translator::insertSubCFG(const CFGBlock& block) {
 
   if (block.getBlockID() == cfg->getExit().getBlockID())
     return;
-  if (analyzer.isInserted(block))
-    return;
-  else
-    analyzer.setInsertedBlock(block);
 
   insertSequentialStmts(block);
-  if (hasTerminator(block)) {
+  if (block.succ_size() > 1) {
     insertSubCFG(**block.succ_begin());
     insertTerminatorFalse(block);
-    insertSubCFG(**block.succ_rbegin());
-    if (domTree.dominates(&block, &getPostDominator(block))) {
-      insertSubCFG(getPostDominator(block));
+    if (hasElsePart(block))
+      insertSubCFG(**block.succ_rbegin());
+    if (auto postdom = getFirstPostDominator(block)) {
+      if (domTree.dominates(&block, postdom))
+        insertSubCFG(*postdom);
     }
   } else if (domTree.dominates(&block, *block.succ_begin())) {
-      insertSubCFG(**block.succ_begin());
+    insertSubCFG(**block.succ_begin());
   }
 }
 
@@ -89,6 +88,7 @@ Translator::beginFunction(const FunctionDecl* funcDecl) {
   cfg = analysis->getCFG();
   analyzer.analyze(cfg);
   domTree.buildDominatorTree(*analysis);
+  postDomTree.buildPostDomTree(*analysis);
 
   outs << indentStr << funcDecl->getNameAsString() << " {" << endl;
   indent();
@@ -158,6 +158,24 @@ Translator::getPostDominator(const CFGBlock& curBlock) const {
   return **block;
 }
 
+CFGBlock*
+Translator::getFirstPostDominator(const CFGBlock& block) const {
+  return postDomTree.findNearestCommonDominator(*block.succ_begin(),
+                                                *block.succ_rbegin());
+}
+
+bool
+Translator::hasTerminator(const CFGBlock& block) const {
+  return block.getTerminatorCondition() != nullptr;
+}
+
+bool
+Translator::hasElsePart(const CFGBlock& block) const {
+  if (auto postdom = getFirstPostDominator(block))
+    return postdom->getBlockID() != (*block.succ_rbegin())->getBlockID();
+  return false;
+}
+
 string
 Translator::getLocString(const CFGBlock& block) {
   string ret(analyzer.getCurrentLoc(block) + " -> ");
@@ -168,11 +186,6 @@ Translator::getLocString(const CFGBlock& block) {
   }
   ret.append(": ");
   return ret;
-}
-
-bool
-Translator::hasTerminator(const CFGBlock& block) const {
-  return block.getTerminatorCondition() != nullptr;
 }
 
 } // namespace vy

@@ -4,6 +4,7 @@
 #include "clang/Analysis/Analyses/Dominators.h"
 
 #include "Translate/CFGAnalyzer.hh"
+#include "Utility/PostDominatorTree.hh"
 
 namespace vy {
 
@@ -24,6 +25,7 @@ private:
   std::size_t indentLevel;
   std::string indentStr;
   CFGAnalyzer analyzer;
+  util::PostDominatorTree postDomTree;
 
   void indent();
   void unindent();
@@ -39,8 +41,10 @@ private:
 
   void replaceAssignOp(std::string&) const;
   const clang::CFGBlock& getPostDominator(const clang::CFGBlock&) const;
+  clang::CFGBlock* getFirstPostDominator(const clang::CFGBlock&) const;
 
   bool hasTerminator(const clang::CFGBlock&) const;
+  bool hasElsePart(const clang::CFGBlock&) const;
   std::string getLocString(const clang::CFGBlock&);
 };
 
