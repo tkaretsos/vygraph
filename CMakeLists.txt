@@ -11,6 +11,7 @@ add_clang_executable(vygraph
   Translate/TranslateASTConsumer.cc
   Translate/Translator.cc
   Utility/Functions.cc
+  Utility/PostDominatorTree.cc
   vygraph.cc
 )
 
