@@ -40,10 +40,8 @@ private:
   void insertTerminatorFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
-  const clang::CFGBlock& getPostDominator(const clang::CFGBlock&) const;
   clang::CFGBlock* getFirstPostDominator(const clang::CFGBlock&) const;
 
-  bool hasTerminator(const clang::CFGBlock&) const;
   bool hasElsePart(const clang::CFGBlock&) const;
   std::string getLocString(const clang::CFGBlock&);
 };

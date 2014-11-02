@@ -149,24 +149,10 @@ Translator::insertTerminatorFalse(const CFGBlock& block) {
   outs << indentStr << loc << stmtStr << endl;
 }
 
-const CFGBlock&
-Translator::getPostDominator(const CFGBlock& curBlock) const {
-  auto branchStart = curBlock.succ_begin();
-  auto block = (*branchStart)->succ_rbegin();
-  while (domTree.dominates(*branchStart, *block))
-    block = (*block)->succ_rbegin();
-  return **block;
-}
-
 CFGBlock*
 Translator::getFirstPostDominator(const CFGBlock& block) const {
   return postDomTree.findNearestCommonDominator(*block.succ_begin(),
                                                 *block.succ_rbegin());
-}
-
-bool
-Translator::hasTerminator(const CFGBlock& block) const {
-  return block.getTerminatorCondition() != nullptr;
 }
 
 bool
