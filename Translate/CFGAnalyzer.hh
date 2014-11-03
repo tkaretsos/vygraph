@@ -4,18 +4,20 @@
 #include <map>
 #include <vector>
 
-namespace clang {
+#include "clang/Analysis/Analyses/Dominators.h"
 
-class CFG;
-class CFGBlock;
-
-}
+#include "Utility/PostDominatorTree.hh"
 
 namespace vy {
 
 class CFGAnalyzer {
 public:
-  void analyze(const clang::CFG*);
+  void analyze(const clang::FunctionDecl*);
+  void finalize();
+
+  const clang::CFG* getCFG() const;
+  const clang::DominatorTree& getDomTree() const;
+  const clang::CFGBlock* findFirstPostDominator(const clang::CFGBlock&) const;
 
   const std::string& getFirstLoc(const clang::CFGBlock&) const;
   const std::string& getFirstAvailableLoc(const clang::CFGBlock&) const;
@@ -30,6 +32,14 @@ private:
   unsigned int pcCounter = 0;
   std::map<unsigned int, std::vector<std::string>> locations;
   std::map<unsigned int, std::vector<std::string>::iterator> currLocs;
+
+  clang::CFG* cfg;
+  clang::AnalysisDeclContextManager analysisManager;
+  std::unique_ptr<clang::AnalysisDeclContext> analysisContext;
+  clang::DominatorTree domTree;
+  util::PostDominatorTree postDomTree;
+
+  void init(const clang::FunctionDecl*);
 };
 
 } // namespace vy

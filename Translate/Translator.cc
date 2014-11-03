@@ -44,17 +44,19 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
 
 void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
+  analyzer.analyze(funcDecl);
   beginFunction(funcDecl);
 
-  insertCFG(**cfg->getEntry().succ_begin());
+  insertCFG(**analyzer.getCFG()->getEntry().succ_begin());
 
   endFunction();
+  analyzer.finalize();
 }
 
 void
 Translator::insertCFG(const CFGBlock& block) {
 
-  if (block.getBlockID() == cfg->getExit().getBlockID())
+  if (block.getBlockID() == analyzer.getCFG()->getExit().getBlockID())
     return;
 
   writeStmts(block);
@@ -63,11 +65,11 @@ Translator::insertCFG(const CFGBlock& block) {
     writeTerminatorFalse(block);
     if (hasElsePart(block))
       insertCFG(**block.succ_rbegin());
-    if (auto postdom = getFirstPostDominator(block)) {
-      if (domTree.dominates(&block, postdom))
+    if (auto postdom = analyzer.findFirstPostDominator(block)) {
+      if (analyzer.getDomTree().dominates(&block, postdom))
         insertCFG(*postdom);
     }
-  } else if (domTree.dominates(&block, *block.succ_begin())) {
+  } else if (analyzer.getDomTree().dominates(&block, *block.succ_begin())) {
     insertCFG(**block.succ_begin());
   }
 }
@@ -84,19 +86,12 @@ Translator::unindent() {
 
 void
 Translator::beginFunction(const FunctionDecl* funcDecl) {
-  analysis.reset(new AnalysisDeclContext(&analysisManager, funcDecl));
-  cfg = analysis->getCFG();
-  analyzer.analyze(cfg);
-  domTree.buildDominatorTree(*analysis);
-  postDomTree.buildPostDomTree(*analysis);
-
   outs << indentStr << funcDecl->getNameAsString() << " {" << endl;
   indent();
 }
 
 void
 Translator::endFunction() {
-  domTree.releaseMemory();
   unindent();
   outs << indentStr << "}" << endl;
 }
@@ -149,15 +144,9 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
   outs << indentStr << loc << stmtStr << endl;
 }
 
-CFGBlock*
-Translator::getFirstPostDominator(const CFGBlock& block) const {
-  return postDomTree.findNearestCommonDominator(*block.succ_begin(),
-                                                *block.succ_rbegin());
-}
-
 bool
 Translator::hasElsePart(const CFGBlock& block) const {
-  if (auto postdom = getFirstPostDominator(block))
+  if (auto postdom = analyzer.findFirstPostDominator(block))
     return postdom->getBlockID() != (*block.succ_rbegin())->getBlockID();
   return false;
 }

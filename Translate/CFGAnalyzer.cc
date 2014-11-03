@@ -10,7 +10,10 @@ using namespace clang;
 using namespace std;
 
 void
-CFGAnalyzer::analyze(const CFG* cfg) {
+CFGAnalyzer::analyze(const clang::FunctionDecl* funcDecl) {
+
+  init(funcDecl);
+
   for (auto block = cfg->rbegin(); block != cfg->rend(); ++block) {
     auto& v = locations[(*block)->getBlockID()];
     for (auto elem = (*block)->begin(); elem != (*block)->end(); ++elem) {
@@ -30,6 +33,28 @@ CFGAnalyzer::analyze(const CFG* cfg) {
   }
 
   locations[cfg->getExit().getBlockID()].push_back("ext");
+}
+
+void
+CFGAnalyzer::finalize() {
+  domTree.releaseMemory();
+  postDomTree.releaseMemory();
+}
+
+const CFG*
+CFGAnalyzer::getCFG() const {
+  return cfg;
+}
+
+const DominatorTree&
+CFGAnalyzer::getDomTree() const {
+  return domTree;
+}
+
+const CFGBlock*
+CFGAnalyzer::findFirstPostDominator(const CFGBlock& block) const {
+  return postDomTree.findNearestCommonDominator(*block.succ_begin(),
+                                                *block.succ_rbegin());
 }
 
 const string&
@@ -73,6 +98,14 @@ CFGAnalyzer::print() const {
       cout << v << " ";
     cout << endl;
   }
+}
+
+void CFGAnalyzer::init(const clang::FunctionDecl* funcDecl) {
+  pcCounter = 0;
+  analysisContext.reset(new AnalysisDeclContext(&analysisManager, funcDecl));
+  cfg = analysisContext->getCFG();
+  domTree.buildDominatorTree(*analysisContext);
+  postDomTree.buildPostDomTree(*analysisContext);
 }
 
 }

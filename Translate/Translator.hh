@@ -1,10 +1,7 @@
 #ifndef VYGRAPH_TRANSLATOR_HH
 #define VYGRAPH_TRANSLATOR_HH
 
-#include "clang/Analysis/Analyses/Dominators.h"
-
 #include "Translate/CFGAnalyzer.hh"
-#include "Utility/PostDominatorTree.hh"
 
 namespace vy {
 
@@ -17,15 +14,10 @@ public:
 
 private:
   clang::ASTContext& context;
-  clang::AnalysisDeclContextManager analysisManager;
-  clang::DominatorTree domTree;
-  clang::CFG* cfg;
-  std::unique_ptr<clang::AnalysisDeclContext> analysis;
   std::stringstream& outs;
   std::size_t indentLevel;
   std::string indentStr;
   CFGAnalyzer analyzer;
-  util::PostDominatorTree postDomTree;
 
   void indent();
   void unindent();
@@ -34,13 +26,10 @@ private:
   void endFunction();
 
   void insertCFG(const clang::CFGBlock&);
-
   void writeStmts(const clang::CFGBlock&);
-
   void writeTerminatorFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
-  clang::CFGBlock* getFirstPostDominator(const clang::CFGBlock&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
   std::string getLocString(const clang::CFGBlock&);
