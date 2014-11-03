@@ -50,6 +50,9 @@ CFGAnalyzer::analyze(const clang::FunctionDecl* funcDecl) {
   }
 
   locations[cfg->getExit().getBlockID()].push_back("ext");
+
+  if (!atomicStack.empty())
+    cout << "stack not empty" << endl;
 }
 
 void
@@ -137,17 +140,12 @@ CFGAnalyzer::atomicEnd(const CFGBlock& block) {
     return;
   }
 
-  if (!domTree.dominates(atomicStack.top(), &block)) {
-    cout << "stack top does not dominate block" << endl;
-    return;
+  if (domTree.dominates(atomicStack.top(), &block) &&
+      postDomTree.dominates(&block, atomicStack.top())) {
+    atomicStack.pop();
+  } else {
+    cout << "no mutual domination" << endl;
   }
-
-  if (!postDomTree.dominates(&block, atomicStack.top())) {
-    cout << "block does not post dominate stack top" << endl;
-    return;
-  }
-
-  atomicStack.pop();
 }
 
 }
