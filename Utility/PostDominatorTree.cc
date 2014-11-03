@@ -33,5 +33,10 @@ PostDominatorTree::findNearestCommonDominator(clang::CFGBlock* A,
   return DT->findNearestCommonDominator(A, B);
 }
 
+void
+PostDominatorTree::releaseMemory() const {
+  DT->releaseMemory();
+}
+
 } // namespace util
 } // namespace vy

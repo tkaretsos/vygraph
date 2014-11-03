@@ -25,6 +25,8 @@ public:
   clang::CFGBlock* findNearestCommonDominator(clang::CFGBlock*,
                                               clang::CFGBlock*) const;
 
+  void releaseMemory() const;
+
 private:
   llvm::DominatorTreeBase<clang::CFGBlock>* DT;
 };
