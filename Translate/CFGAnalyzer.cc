@@ -15,8 +15,15 @@ CFGAnalyzer::analyze(const CFG* cfg) {
     auto& v = locations[(*block)->getBlockID()];
     for (auto elem = (*block)->begin(); elem != (*block)->end(); ++elem) {
       if (auto stmt = elem->getAs<CFGStmt>()) {
-        if (!isa<DeclStmt>(stmt->getStmt()) && !isa<ReturnStmt>(stmt->getStmt()))
-          v.push_back("pc" + to_string(pcCounter++));
+        switch (stmt->getStmt()->getStmtClass()) {
+          default:
+            v.push_back("pc" + to_string(pcCounter++));
+            break;
+
+          case Stmt::DeclStmtClass:
+          case Stmt::ReturnStmtClass:
+            break;
+        }
       }
     }
     currLocs[(*block)->getBlockID()] = v.begin();
