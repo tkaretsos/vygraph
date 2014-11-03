@@ -137,6 +137,9 @@ Translator::writeStmts(const CFGBlock& block) {
           if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
             endAtomic();
 
+          if (call->getDirectCallee()->getNameAsString() == "vy_assert")
+            writeAssert(block, call->getArg(0));
+
           break;
         }
 
@@ -167,6 +170,16 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
   outs << indentStr << loc << stmtStr << endl;
 }
 
+void
+Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
+  string exprStr(util::RangeToStr(expr->getSourceRange(), context));
+  string str("assume(!(" + exprStr + "));");
+  outs << indentStr << getLocString(block, true) << str << endl;
+
+  str.assign("assume(" + exprStr + ");");
+  outs << indentStr << getLocString(block) << str << endl;
+}
+
 bool
 Translator::hasElsePart(const CFGBlock& block) const {
   if (auto postdom = analyzer.findFirstPostDominator(block))
@@ -175,12 +188,16 @@ Translator::hasElsePart(const CFGBlock& block) const {
 }
 
 string
-Translator::getLocString(const CFGBlock& block) {
+Translator::getLocString(const CFGBlock& block, bool toErr) {
   string ret(analyzer.getCurrentLoc(block) + " -> ");
-  if (analyzer.hasNextLoc(block)) {
-    ret.append(analyzer.getNextLoc(block));
+  if (toErr) {
+    ret.append("err");
   } else {
-    ret.append(analyzer.getFirstAvailableLoc(**block.succ_begin()));
+    if (analyzer.hasNextLoc(block)) {
+      ret.append(analyzer.getNextLoc(block));
+    } else {
+      ret.append(analyzer.getFirstAvailableLoc(**block.succ_begin()));
+    }
   }
   ret.append(": ");
   return ret;

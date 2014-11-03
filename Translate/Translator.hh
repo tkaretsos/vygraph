@@ -31,11 +31,12 @@ private:
   void insertCFG(const clang::CFGBlock&);
   void writeStmts(const clang::CFGBlock&);
   void writeTerminatorFalse(const clang::CFGBlock&);
+  void writeAssert(const clang::CFGBlock&, const clang::Expr*);
 
   void replaceAssignOp(std::string&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
-  std::string getLocString(const clang::CFGBlock&);
+  std::string getLocString(const clang::CFGBlock&, bool = false);
 };
 
 } // namespace vy
