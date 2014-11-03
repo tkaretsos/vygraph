@@ -97,6 +97,18 @@ Translator::endFunction() {
 }
 
 void
+Translator::beginAtomic() {
+  outs << indentStr << "atomic {" << endl;
+  indent();
+}
+
+void
+Translator::endAtomic() {
+  unindent();
+  outs << indentStr << "}" << endl;
+}
+
+void
 Translator::replaceAssignOp(std::string& expr) const {
   auto found = expr.find('=');
   if (found != string::npos)
@@ -114,6 +126,17 @@ Translator::writeStmts(const CFGBlock& block) {
           replaceAssignOp(stmtStr);
           stmtStr.append(";");
           outs << indentStr << getLocString(block) << stmtStr << endl;
+          break;
+        }
+
+        case Stmt::CallExprClass: {
+          auto call = cast<CallExpr>(cfgStmt->getStmt());
+          if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin")
+            beginAtomic();
+
+          if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
+            endAtomic();
+
           break;
         }
 

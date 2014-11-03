@@ -25,6 +25,9 @@ private:
   void beginFunction(const clang::FunctionDecl*);
   void endFunction();
 
+  void beginAtomic();
+  void endAtomic();
+
   void insertCFG(const clang::CFGBlock&);
   void writeStmts(const clang::CFGBlock&);
   void writeTerminatorFalse(const clang::CFGBlock&);
