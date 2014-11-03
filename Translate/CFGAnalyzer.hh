@@ -2,6 +2,7 @@
 #define VYGRAPH_CFGANALYZER_HH
 
 #include <map>
+#include <stack>
 #include <vector>
 
 #include "clang/Analysis/Analyses/Dominators.h"
@@ -32,6 +33,7 @@ private:
   unsigned int pcCounter = 0;
   std::map<unsigned int, std::vector<std::string>> locations;
   std::map<unsigned int, std::vector<std::string>::iterator> currLocs;
+  std::stack<const clang::CFGBlock*> atomicStack;
 
   clang::CFG* cfg;
   clang::AnalysisDeclContextManager analysisManager;
@@ -40,6 +42,9 @@ private:
   util::PostDominatorTree postDomTree;
 
   void init(const clang::FunctionDecl*);
+
+  void atomicBegin(const clang::CFGBlock&);
+  void atomicEnd(const clang::CFGBlock&);
 };
 
 } // namespace vy

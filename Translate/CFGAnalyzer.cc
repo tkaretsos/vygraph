@@ -3,6 +3,9 @@
 #include <iostream>
 
 #include "clang/Analysis/CFG.h"
+#include "clang/AST/Decl.h"
+#include "clang/AST/Expr.h"
+#include "clang/AST/Stmt.h"
 
 namespace vy {
 
@@ -22,6 +25,20 @@ CFGAnalyzer::analyze(const clang::FunctionDecl* funcDecl) {
           default:
             v.push_back("pc" + to_string(pcCounter++));
             break;
+
+          case Stmt::CallExprClass: {
+            auto call = cast<CallExpr>(stmt->getStmt());
+            if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin") {
+              atomicBegin(**block);
+              break;
+            }
+            if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end") {
+              atomicEnd(**block);
+              break;
+            }
+            v.push_back("pc" + to_string(pcCounter++));
+            break;
+          }
 
           case Stmt::DeclStmtClass:
           case Stmt::ReturnStmtClass:
@@ -106,6 +123,31 @@ void CFGAnalyzer::init(const clang::FunctionDecl* funcDecl) {
   cfg = analysisContext->getCFG();
   domTree.buildDominatorTree(*analysisContext);
   postDomTree.buildPostDomTree(*analysisContext);
+}
+
+void
+CFGAnalyzer::atomicBegin(const CFGBlock& block) {
+  atomicStack.push(&block);
+}
+
+void
+CFGAnalyzer::atomicEnd(const CFGBlock& block) {
+  if (atomicStack.empty()) {
+    cout << "atomic stack empty" << endl;
+    return;
+  }
+
+  if (!domTree.dominates(atomicStack.top(), &block)) {
+    cout << "stack top does not dominate block" << endl;
+    return;
+  }
+
+  if (!postDomTree.dominates(&block, atomicStack.top())) {
+    cout << "block does not post dominate stack top" << endl;
+    return;
+  }
+
+  atomicStack.pop();
 }
 
 }
