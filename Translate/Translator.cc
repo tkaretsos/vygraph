@@ -46,29 +46,29 @@ void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   beginFunction(funcDecl);
 
-  insertSubCFG(**cfg->getEntry().succ_begin());
+  insertCFG(**cfg->getEntry().succ_begin());
 
   endFunction();
 }
 
 void
-Translator::insertSubCFG(const CFGBlock& block) {
+Translator::insertCFG(const CFGBlock& block) {
 
   if (block.getBlockID() == cfg->getExit().getBlockID())
     return;
 
-  insertSequentialStmts(block);
+  writeStmts(block);
   if (block.succ_size() > 1) {
-    insertSubCFG(**block.succ_begin());
-    insertTerminatorFalse(block);
+    insertCFG(**block.succ_begin());
+    writeTerminatorFalse(block);
     if (hasElsePart(block))
-      insertSubCFG(**block.succ_rbegin());
+      insertCFG(**block.succ_rbegin());
     if (auto postdom = getFirstPostDominator(block)) {
       if (domTree.dominates(&block, postdom))
-        insertSubCFG(*postdom);
+        insertCFG(*postdom);
     }
   } else if (domTree.dominates(&block, *block.succ_begin())) {
-    insertSubCFG(**block.succ_begin());
+    insertCFG(**block.succ_begin());
   }
 }
 
@@ -109,7 +109,7 @@ Translator::replaceAssignOp(std::string& expr) const {
 }
 
 void
-Translator::insertSequentialStmts(const CFGBlock& block) {
+Translator::writeStmts(const CFGBlock& block) {
   for (auto elem = block.begin(); elem != block.end(); ++elem) {
     if (auto cfgStmt = elem->getAs<CFGStmt>()) {
       switch (cfgStmt->getStmt()->getStmtClass()) {
@@ -137,7 +137,7 @@ Translator::insertSequentialStmts(const CFGBlock& block) {
 }
 
 void
-Translator::insertTerminatorFalse(const CFGBlock& block) {
+Translator::writeTerminatorFalse(const CFGBlock& block) {
   string stmtStr(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
                                   context));
   stmtStr.insert(0, "!(");

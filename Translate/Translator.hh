@@ -33,11 +33,11 @@ private:
   void beginFunction(const clang::FunctionDecl*);
   void endFunction();
 
-  void insertSubCFG(const clang::CFGBlock&);
+  void insertCFG(const clang::CFGBlock&);
 
-  void insertSequentialStmts(const clang::CFGBlock&);
+  void writeStmts(const clang::CFGBlock&);
 
-  void insertTerminatorFalse(const clang::CFGBlock&);
+  void writeTerminatorFalse(const clang::CFGBlock&);
 
   void replaceAssignOp(std::string&) const;
   clang::CFGBlock* getFirstPostDominator(const clang::CFGBlock&) const;
