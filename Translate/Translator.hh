@@ -3,6 +3,10 @@
 
 #include "Translate/CFGAnalyzer.hh"
 
+namespace clang {
+class CallExpr;
+}
+
 namespace vy {
 
 class Translator {
@@ -34,6 +38,7 @@ private:
   void writeTerminatorFalse(const clang::CFGBlock&);
   void writeAssert(const clang::CFGBlock&, const clang::Expr*);
   void writeAssume(const clang::CFGBlock&, const clang::Stmt*);
+  void writeCustomFunctionCall(const clang::CFGBlock&, const clang::CallExpr*);
 
   void replaceAssignOp(std::string&) const;
 

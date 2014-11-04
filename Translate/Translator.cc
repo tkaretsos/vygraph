@@ -145,22 +145,9 @@ Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
       break;
     }
 
-    case Stmt::CallExprClass: {
-      auto call = cast<CallExpr>(stmt);
-      if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin")
-        beginAtomic();
-
-      if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
-        endAtomic();
-
-      if (call->getDirectCallee()->getNameAsString() == "vy_assert")
-        writeAssert(block, call->getArg(0));
-
-      if (call->getDirectCallee()->getNameAsString() == "vy_assume")
-        writeAssume(block, call->getArg(0));
-
+    case Stmt::CallExprClass:
+      writeCustomFunctionCall(block, cast<CallExpr>(stmt));
       break;
-    }
 
     case Stmt::DeclStmtClass: {
       auto declStmt = cast<DeclStmt>(stmt);
@@ -199,6 +186,21 @@ Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
   str.append(util::RangeToStr(condition->getSourceRange(), context));
   str.append(");");
   outs << indentStr << analyzer.getLocString(block) << str << endl;
+}
+
+void
+Translator::writeCustomFunctionCall(const CFGBlock& block, const CallExpr* call) {
+  if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin")
+    beginAtomic();
+
+  if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
+    endAtomic();
+
+  if (call->getDirectCallee()->getNameAsString() == "vy_assert")
+    writeAssert(block, call->getArg(0));
+
+  if (call->getDirectCallee()->getNameAsString() == "vy_assume")
+    writeAssume(block, call->getArg(0));
 }
 
 bool
