@@ -126,6 +126,13 @@ CFGAnalyzer::getLocString(const CFGBlock& block, bool toErr) {
   return ret;
 }
 
+string
+CFGAnalyzer::getTerminatorFalseLoc(const CFGBlock& block) {
+  string loc(getLastLoc(block) + " -> ");
+  loc.append(getFirstAvailableLoc(**block.succ_rbegin()) + ": ");
+  return loc;
+}
+
 void
 CFGAnalyzer::print() const {
   for (auto& p : locations) {

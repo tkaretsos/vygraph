@@ -181,10 +181,7 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
                                   context));
   stmtStr.append("));");
 
-  string loc(analyzer.getLastLoc(block) + " -> ");
-  loc.append(analyzer.getFirstAvailableLoc(**block.succ_rbegin()) + ": ");
-
-  outs << indentStr << loc << stmtStr << endl;
+  outs << indentStr << analyzer.getTerminatorFalseLoc(block) << stmtStr << endl;
 }
 
 void

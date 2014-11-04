@@ -28,6 +28,7 @@ public:
   bool hasNextLoc(const clang::CFGBlock&) const;
 
   std::string getLocString(const clang::CFGBlock&, bool = false);
+  std::string getTerminatorFalseLoc(const clang::CFGBlock&);
 
   void print() const;
 
