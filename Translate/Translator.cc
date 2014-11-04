@@ -141,7 +141,7 @@ Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
       string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
       replaceAssignOp(stmtStr);
       stmtStr.append(";");
-      outs << indentStr << getLocString(block) << stmtStr << endl;
+      outs << indentStr << analyzer.getLocString(block) << stmtStr << endl;
       break;
     }
 
@@ -191,7 +191,7 @@ void
 Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
   string exprStr(util::RangeToStr(expr->getSourceRange(), context));
   string str("assume(!(" + exprStr + "));");
-  outs << indentStr << getLocString(block, true) << str << endl;
+  outs << indentStr << analyzer.getLocString(block, true) << str << endl;
 
   writeAssume(block, expr);
 }
@@ -201,7 +201,7 @@ Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
   string str("assume(");
   str.append(util::RangeToStr(condition->getSourceRange(), context));
   str.append(");");
-  outs << indentStr << getLocString(block) << str << endl;
+  outs << indentStr << analyzer.getLocString(block) << str << endl;
 }
 
 bool
@@ -209,22 +209,6 @@ Translator::hasElsePart(const CFGBlock& block) const {
   if (auto postdom = analyzer.findFirstPostDominator(block))
     return postdom->getBlockID() != (*block.succ_rbegin())->getBlockID();
   return false;
-}
-
-string
-Translator::getLocString(const CFGBlock& block, bool toErr) {
-  string ret(analyzer.getCurrentLoc(block) + " -> ");
-  if (toErr) {
-    ret.append("err");
-  } else {
-    if (analyzer.hasNextLoc(block)) {
-      ret.append(analyzer.getNextLoc(block));
-    } else {
-      ret.append(analyzer.getFirstAvailableLoc(**block.succ_begin()));
-    }
-  }
-  ret.append(": ");
-  return ret;
 }
 
 } // namespace vy

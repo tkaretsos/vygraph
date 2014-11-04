@@ -38,7 +38,6 @@ private:
   void replaceAssignOp(std::string&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
-  std::string getLocString(const clang::CFGBlock&, bool = false);
 };
 
 } // namespace vy

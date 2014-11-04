@@ -27,6 +27,8 @@ public:
   const std::string& getNextLoc(const clang::CFGBlock&);
   bool hasNextLoc(const clang::CFGBlock&) const;
 
+  std::string getLocString(const clang::CFGBlock&, bool = false);
+
   void print() const;
 
 private:

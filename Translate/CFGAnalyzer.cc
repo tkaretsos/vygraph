@@ -110,6 +110,22 @@ CFGAnalyzer::hasNextLoc(const CFGBlock& block) const {
   return currLocs.at(block.getBlockID()) + 1 != locations.at(block.getBlockID()).end();
 }
 
+string
+CFGAnalyzer::getLocString(const CFGBlock& block, bool toErr) {
+  string ret(getCurrentLoc(block) + " -> ");
+  if (toErr) {
+    ret.append("err");
+  } else {
+    if (hasNextLoc(block)) {
+      ret.append(getNextLoc(block));
+    } else {
+      ret.append(getFirstAvailableLoc(**block.succ_begin()));
+    }
+  }
+  ret.append(": ");
+  return ret;
+}
+
 void
 CFGAnalyzer::print() const {
   for (auto& p : locations) {
