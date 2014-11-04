@@ -78,21 +78,11 @@ CFGAnalyzer::findFirstPostDominator(const CFGBlock& block) const {
 }
 
 const string&
-CFGAnalyzer::getFirstLoc(const CFGBlock& block) const {
-  return locations.at(block.getBlockID()).front();
-}
-
-const string&
 CFGAnalyzer::getFirstAvailableLoc(const CFGBlock& block) const {
   auto nextBlock = &block;
   while (locations.at(nextBlock->getBlockID()).size() == 0)
     nextBlock = *nextBlock->succ_begin();
-  return getFirstLoc(*nextBlock);
-}
-
-const string&
-CFGAnalyzer::getLastLoc(const CFGBlock& block) const {
-  return locations.at(block.getBlockID()).back();
+  return locations.at(nextBlock->getBlockID()).front();
 }
 
 const string&
@@ -128,7 +118,7 @@ CFGAnalyzer::getLocString(const CFGBlock& block, bool toErr) {
 
 string
 CFGAnalyzer::getTerminatorFalseLoc(const CFGBlock& block) {
-  string loc(getLastLoc(block) + " -> ");
+  string loc(locations.at(block.getBlockID()).back() + " -> ");
   loc.append(getFirstAvailableLoc(**block.succ_rbegin()) + ": ");
   return loc;
 }

@@ -20,13 +20,6 @@ public:
   const clang::DominatorTree& getDomTree() const;
   const clang::CFGBlock* findFirstPostDominator(const clang::CFGBlock&) const;
 
-  const std::string& getFirstLoc(const clang::CFGBlock&) const;
-  const std::string& getFirstAvailableLoc(const clang::CFGBlock&) const;
-  const std::string& getLastLoc(const clang::CFGBlock&) const;
-  const std::string& getCurrentLoc(const clang::CFGBlock&) const;
-  const std::string& getNextLoc(const clang::CFGBlock&);
-  bool hasNextLoc(const clang::CFGBlock&) const;
-
   std::string getLocString(const clang::CFGBlock&, bool = false);
   std::string getTerminatorFalseLoc(const clang::CFGBlock&);
 
@@ -48,6 +41,11 @@ private:
 
   void atomicBegin(const clang::CFGBlock&);
   void atomicEnd(const clang::CFGBlock&);
+
+  const std::string& getFirstAvailableLoc(const clang::CFGBlock&) const;
+  const std::string& getCurrentLoc(const clang::CFGBlock&) const;
+  const std::string& getNextLoc(const clang::CFGBlock&);
+  bool hasNextLoc(const clang::CFGBlock&) const;
 };
 
 } // namespace vy
