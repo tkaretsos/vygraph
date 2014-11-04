@@ -47,30 +47,30 @@ Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   analyzer.analyze(funcDecl);
   beginFunction(funcDecl);
 
-  insertCFG(**analyzer.getCFG()->getEntry().succ_begin());
+  writeCFG(**analyzer.getCFG()->getEntry().succ_begin());
 
   endFunction();
   analyzer.finalize();
 }
 
 void
-Translator::insertCFG(const CFGBlock& block) {
+Translator::writeCFG(const CFGBlock& block) {
 
   if (block.getBlockID() == analyzer.getCFG()->getExit().getBlockID())
     return;
 
-  writeStmts(block);
+  writeStatements(block);
   if (block.succ_size() > 1) {
-    insertCFG(**block.succ_begin());
+    writeCFG(**block.succ_begin());
     writeTerminatorFalse(block);
     if (hasElsePart(block))
-      insertCFG(**block.succ_rbegin());
+      writeCFG(**block.succ_rbegin());
     if (auto postdom = analyzer.findFirstPostDominator(block)) {
       if (analyzer.getDomTree().dominates(&block, postdom))
-        insertCFG(*postdom);
+        writeCFG(*postdom);
     }
   } else if (analyzer.getDomTree().dominates(&block, *block.succ_begin())) {
-    insertCFG(**block.succ_begin());
+    writeCFG(**block.succ_begin());
   }
 }
 
@@ -116,53 +116,70 @@ Translator::replaceAssignOp(std::string& expr) const {
 }
 
 void
-Translator::writeStmts(const CFGBlock& block) {
-  for (auto elem = block.begin(); elem != block.end(); ++elem) {
+Translator::writeStatements(const CFGBlock& block) {
+  if (block.empty())
+    return;
+
+  for (auto elem = block.begin(); elem != block.end() - 1; ++elem) {
     if (auto cfgStmt = elem->getAs<CFGStmt>()) {
-      switch (cfgStmt->getStmt()->getStmtClass()) {
-        default: {
-          string stmtStr(util::RangeToStr(cfgStmt->getStmt()->getSourceRange(),
-                                          context));
-          replaceAssignOp(stmtStr);
-          stmtStr.append(";");
-          outs << indentStr << getLocString(block) << stmtStr << endl;
-          break;
-        }
-
-        case Stmt::CallExprClass: {
-          auto call = cast<CallExpr>(cfgStmt->getStmt());
-          if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin")
-            beginAtomic();
-
-          if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
-            endAtomic();
-
-          if (call->getDirectCallee()->getNameAsString() == "vy_assert")
-            writeAssert(block, call->getArg(0));
-
-          break;
-        }
-
-        case Stmt::DeclStmtClass: {
-          auto declStmt = cast<DeclStmt>(cfgStmt->getStmt());
-          if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl()))
-            translateVarDecl(varDecl);
-          break;
-        }
-
-        case Stmt::ReturnStmtClass:
-          break;
-      }
+      writeStmt(block, cfgStmt->getStmt());
     }
+  }
+
+  if (auto cfgStmt = (block.rbegin())->getAs<CFGStmt>()) {
+    if (block.succ_size() > 1)
+      writeAssume(block, cfgStmt->getStmt());
+    else
+      writeStmt(block, cfgStmt->getStmt());
+  }
+}
+
+void
+Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
+  switch (stmt->getStmtClass()) {
+    default: {
+      string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
+      replaceAssignOp(stmtStr);
+      stmtStr.append(";");
+      outs << indentStr << getLocString(block) << stmtStr << endl;
+      break;
+    }
+
+    case Stmt::CallExprClass: {
+      auto call = cast<CallExpr>(stmt);
+      if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin")
+        beginAtomic();
+
+      if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
+        endAtomic();
+
+      if (call->getDirectCallee()->getNameAsString() == "vy_assert")
+        writeAssert(block, call->getArg(0));
+
+      if (call->getDirectCallee()->getNameAsString() == "vy_assume")
+        writeAssume(block, call->getArg(0));
+
+      break;
+    }
+
+    case Stmt::DeclStmtClass: {
+      auto declStmt = cast<DeclStmt>(stmt);
+      if (auto varDecl = dyn_cast<VarDecl>(declStmt->getSingleDecl()))
+        translateVarDecl(varDecl);
+      break;
+    }
+
+    case Stmt::ReturnStmtClass:
+      break;
   }
 }
 
 void
 Translator::writeTerminatorFalse(const CFGBlock& block) {
-  string stmtStr(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
+  string stmtStr("assume(!(");
+  stmtStr.append(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
                                   context));
-  stmtStr.insert(0, "!(");
-  stmtStr.append(");");
+  stmtStr.append("));");
 
   string loc(analyzer.getLastLoc(block) + " -> ");
   loc.append(analyzer.getFirstAvailableLoc(**block.succ_rbegin()) + ": ");
@@ -176,7 +193,14 @@ Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
   string str("assume(!(" + exprStr + "));");
   outs << indentStr << getLocString(block, true) << str << endl;
 
-  str.assign("assume(" + exprStr + ");");
+  writeAssume(block, expr);
+}
+
+void
+Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
+  string str("assume(");
+  str.append(util::RangeToStr(condition->getSourceRange(), context));
+  str.append(");");
   outs << indentStr << getLocString(block) << str << endl;
 }
 

@@ -28,10 +28,12 @@ private:
   void beginAtomic();
   void endAtomic();
 
-  void insertCFG(const clang::CFGBlock&);
-  void writeStmts(const clang::CFGBlock&);
+  void writeCFG(const clang::CFGBlock&);
+  void writeStatements(const clang::CFGBlock&);
+  void writeStmt(const clang::CFGBlock&, const clang::Stmt*);
   void writeTerminatorFalse(const clang::CFGBlock&);
   void writeAssert(const clang::CFGBlock&, const clang::Expr*);
+  void writeAssume(const clang::CFGBlock&, const clang::Stmt*);
 
   void replaceAssignOp(std::string&) const;
 
