@@ -46,7 +46,7 @@ void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   analyzer.analyze(funcDecl);
   beginFunction(funcDecl);
-
+analyzer.getCFG()->dump(context.getLangOpts(), true);
   writeCFG(**analyzer.getCFG()->getEntry().succ_begin());
 
   endFunction();
@@ -215,17 +215,27 @@ Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
 
 void
 Translator::writeCustomFunctionCall(const CFGBlock& block, const CallExpr* call) {
-  if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin")
+  if (call->getDirectCallee()->getNameAsString() == "vy_atomic_begin") {
     beginAtomic();
+    return;
+  }
 
-  if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end")
+  if (call->getDirectCallee()->getNameAsString() == "vy_atomic_end") {
     endAtomic();
+    return;
+  }
 
-  if (call->getDirectCallee()->getNameAsString() == "vy_assert")
+  if (call->getDirectCallee()->getNameAsString() == "vy_assert") {
     writeAssert(block, call->getArg(0));
+    return;
+  }
 
-  if (call->getDirectCallee()->getNameAsString() == "vy_assume")
+  if (call->getDirectCallee()->getNameAsString() == "vy_assume") {
     writeAssume(block, call->getArg(0));
+    return;
+  }
+
+  writeDefaultStmt(block, call);
 }
 
 bool
