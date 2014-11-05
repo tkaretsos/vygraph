@@ -141,6 +141,10 @@ Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
       writeDefaultStmt(block, stmt);
       break;
 
+    case Stmt::BinaryOperatorClass:
+      writeBinaryOp(block, cast<BinaryOperator>(stmt));
+      break;
+
     case Stmt::CallExprClass:
       writeCustomFunctionCall(block, cast<CallExpr>(stmt));
       break;
@@ -163,6 +167,23 @@ Translator::writeDefaultStmt(const CFGBlock& block, const Stmt* stmt) {
   replaceAssignOp(stmtStr);
   stmtStr.append(";");
   outs << indentStr << analyzer.getLocString(block) << stmtStr << endl;
+}
+
+void
+Translator::writeBinaryOp(const CFGBlock& block, const BinaryOperator* binOp) {
+  if (binOp->getLHS()->getType().getTypePtr()->isBooleanType()) {
+    string rhsStr(util::RangeToStr(binOp->getRHS()->getSourceRange(), context));
+    if (rhsStr == "0" || rhsStr == "1") {
+      string str(util::RangeToStr(binOp->getLHS()->getSourceRange(), context));
+      str.append(" := ");
+      str.append((rhsStr == "0") ? "false" : "true");
+      str.append(";");
+      outs << indentStr << analyzer.getLocString(block) << str << endl;
+      return;
+    }
+  }
+
+  writeDefaultStmt(block, binOp);
 }
 
 void

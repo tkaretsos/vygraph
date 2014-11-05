@@ -4,6 +4,7 @@
 #include "Translate/CFGAnalyzer.hh"
 
 namespace clang {
+class BinaryOperator;
 class CallExpr;
 }
 
@@ -36,6 +37,7 @@ private:
   void writeStatements(const clang::CFGBlock&);
   void writeStmt(const clang::CFGBlock&, const clang::Stmt*);
   void writeDefaultStmt(const clang::CFGBlock&, const clang::Stmt*);
+  void writeBinaryOp(const clang::CFGBlock&, const clang::BinaryOperator*);
   void writeTerminatorFalse(const clang::CFGBlock&);
   void writeAssert(const clang::CFGBlock&, const clang::Expr*);
   void writeAssume(const clang::CFGBlock&, const clang::Stmt*);
