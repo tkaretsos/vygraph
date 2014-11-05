@@ -35,6 +35,7 @@ private:
   void writeCFG(const clang::CFGBlock&);
   void writeStatements(const clang::CFGBlock&);
   void writeStmt(const clang::CFGBlock&, const clang::Stmt*);
+  void writeDefaultStmt(const clang::CFGBlock&, const clang::Stmt*);
   void writeTerminatorFalse(const clang::CFGBlock&);
   void writeAssert(const clang::CFGBlock&, const clang::Expr*);
   void writeAssume(const clang::CFGBlock&, const clang::Stmt*);

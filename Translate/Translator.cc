@@ -137,13 +137,9 @@ Translator::writeStatements(const CFGBlock& block) {
 void
 Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
   switch (stmt->getStmtClass()) {
-    default: {
-      string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
-      replaceAssignOp(stmtStr);
-      stmtStr.append(";");
-      outs << indentStr << analyzer.getLocString(block) << stmtStr << endl;
+    default:
+      writeDefaultStmt(block, stmt);
       break;
-    }
 
     case Stmt::CallExprClass:
       writeCustomFunctionCall(block, cast<CallExpr>(stmt));
@@ -159,6 +155,14 @@ Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
     case Stmt::ReturnStmtClass:
       break;
   }
+}
+
+void
+Translator::writeDefaultStmt(const CFGBlock& block, const Stmt* stmt) {
+  string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
+  replaceAssignOp(stmtStr);
+  stmtStr.append(";");
+  outs << indentStr << analyzer.getLocString(block) << stmtStr << endl;
 }
 
 void
