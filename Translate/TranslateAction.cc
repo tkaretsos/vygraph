@@ -22,9 +22,9 @@ TranslateAction::BeginSourceFileAction(CompilerInstance& CI, StringRef filename)
   outFileName = filename.str();
   auto found = outFileName.find_last_of('.');
   if (found != std::string::npos)
-    outFileName.replace(outFileName.begin() + found, outFileName.end(), ".vyc");
+    outFileName.replace(outFileName.begin() + found, outFileName.end(), ".mmn");
   else
-    outFileName.append(".vyc");
+    outFileName.append(".mmn");
   return true;
 }
 
