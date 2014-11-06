@@ -204,6 +204,7 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
   stmtStr.append(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
                                   context));
   stmtStr.append("));");
+  replaceEqualsOp(stmtStr);
 
   outs << indentStr << analyzer.getTerminatorFalseLoc(block) << stmtStr << endl;
 }
@@ -212,6 +213,7 @@ void
 Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
   string exprStr(util::RangeToStr(expr->getSourceRange(), context));
   string str("assume(!(" + exprStr + "));");
+  replaceEqualsOp(str);
   outs << indentStr << analyzer.getLocString(block, true) << str << endl;
 
   writeAssume(block, expr);
