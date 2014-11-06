@@ -49,6 +49,7 @@ CFGAnalyzer::analyze(const clang::FunctionDecl* funcDecl) {
     currLocs[(*block)->getBlockID()] = v.begin();
   }
 
+  locations[(*cfg->getEntry().succ_begin())->getBlockID()].front().assign("ent");
   locations[cfg->getExit().getBlockID()].push_back("ext");
 
   if (!atomicStack.empty())
