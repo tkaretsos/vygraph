@@ -46,7 +46,7 @@ void
 Translator::translateFunction(clang::FunctionDecl* funcDecl) {
   analyzer.analyze(funcDecl);
   beginFunction(funcDecl);
-analyzer.getCFG()->dump(context.getLangOpts(), true);
+
   writeCFG(**analyzer.getCFG()->getEntry().succ_begin());
 
   endFunction();

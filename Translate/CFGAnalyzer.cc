@@ -57,6 +57,9 @@ CFGAnalyzer::analyze(const clang::FunctionDecl* funcDecl) {
 
 void
 CFGAnalyzer::finalize() {
+  for (auto& loc : locations)
+    loc.second.clear();
+
   domTree.releaseMemory();
   postDomTree.releaseMemory();
 }
