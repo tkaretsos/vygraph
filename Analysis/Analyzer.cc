@@ -1,6 +1,9 @@
 #include "Analyzer.hh"
-#include <iostream>
+
 #include "clang/ASTMatchers/ASTMatchers.h"
+#include "clang/Tooling/Tooling.h"
+
+#include "FunctionManager.hh"
 
 namespace vy {
 
@@ -12,25 +15,25 @@ Analyzer::Analyzer(ClangTool& tool) : tool(tool) { }
 
 void
 Analyzer::analyze() {
-  Analyzer::FunctionDefLocator locator;
-  MatchFinder finder;
-  DeclarationMatcher functionDef = functionDecl(isDefinition()).bind("functionDef");
-  finder.addMatcher(functionDef, &locator);
-  tool.run(newFrontendActionFactory(&finder));
+  DeclarationMatcher funcDef = functionDecl(isDefinition()).bind("functionDef");
 
-  Analyzer::FunctionCallLocator callLocator;
-  MatchFinder callFinder;
-  auto userFunc = functionDecl(isDefinition());
+  MatchFinder defFinder;
+  Analyzer::FunctionDefLocator defLocator;
+  defFinder.addMatcher(funcDef, &defLocator);
+  tool.run(newFrontendActionFactory(&defFinder));
+
 
   StatementMatcher simpleCall = callExpr(hasParent(compoundStmt()),
-                                         hasDeclaration(userFunc)
+                                         hasDeclaration(funcDef)
                                          ).bind("simpleCall");
 
   StatementMatcher stmtWithCall = stmt(hasParent(compoundStmt()),
-                                       hasDescendant(callExpr(hasDeclaration(userFunc))),
+                                       hasDescendant(callExpr(hasDeclaration(funcDef))),
                                        unless(anyOf(ifStmt(), whileStmt(), forStmt()))
                                        ).bind("stmtWithCall");
 
+  MatchFinder callFinder;
+  Analyzer::FunctionCallLocator callLocator;
   callFinder.addMatcher(simpleCall, &callLocator);
   callFinder.addMatcher(stmtWithCall, &callLocator);
   tool.run(newFrontendActionFactory(&callFinder));
@@ -52,15 +55,15 @@ Analyzer::FunctionCallLocator::run(const MatchFinder::MatchResult& result) {
   }
 
   if (auto stmt = result.Nodes.getNodeAs<Stmt>("stmtWithCall")) {
-    const CallExpr* call = Analyzer::findCallInStmt(stmt);
+    auto call = findCallInStmt(stmt);
     if (call != nullptr) {
       functionMgr.addCall(call, false, stmt->getLocStart());
     }
   }
 }
 
-const clang::CallExpr*
-Analyzer::findCallInStmt(const Stmt* stmt) {
+const CallExpr*
+Analyzer::FunctionCallLocator::findCallInStmt(const Stmt* stmt) {
 
   CallExpr* call = nullptr;
   if (call = dyn_cast<CallExpr>(const_cast<Stmt*>(stmt))) {
