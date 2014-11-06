@@ -10,6 +10,8 @@
 #include "Analysis/FunctionManager.hh"
 #include "Analysis/Analyzer.hh"
 
+#include "Translate/TranslateAction.hh"
+
 using namespace clang::tooling;
 using namespace llvm::cl;
 
@@ -36,6 +38,7 @@ int main(int argc, const char **argv) {
   vy::Analyzer analyzer(tool);
   analyzer.analyze();
 
-  tool.run(newFrontendActionFactory<vy::InlineAction>());
+//   tool.run(newFrontendActionFactory<vy::InlineAction>());
+  tool.run(newFrontendActionFactory<vy::TranslateAction>());
   return 0;
 }

@@ -27,7 +27,8 @@ Analyzer::analyze() {
                                          ).bind("simpleCall");
 
   StatementMatcher stmtWithCall = stmt(hasParent(compoundStmt()),
-                                       hasDescendant(callExpr(hasDeclaration(userFunc)))
+                                       hasDescendant(callExpr(hasDeclaration(userFunc))),
+                                       unless(anyOf(ifStmt(), whileStmt(), forStmt()))
                                        ).bind("stmtWithCall");
 
   callFinder.addMatcher(simpleCall, &callLocator);

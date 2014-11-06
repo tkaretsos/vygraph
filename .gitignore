@@ -12,11 +12,12 @@ vygraph
 build
 *.o
 *.inlined.c
-*.vyc
+*.mmn
 *.autosave
 *.kdev4
 *.kate-swp
 *.expected
+inputs/translate/test_input.sh
 
 ############
 # Qt Creator
