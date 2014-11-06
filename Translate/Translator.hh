@@ -44,6 +44,7 @@ private:
   void writeCustomFunctionCall(const clang::CFGBlock&, const clang::CallExpr*);
 
   void replaceAssignOp(std::string&) const;
+  void replaceEqualsOp(std::string&) const;
 
   bool hasElsePart(const clang::CFGBlock&) const;
 };

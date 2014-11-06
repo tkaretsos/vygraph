@@ -20,12 +20,15 @@ void
 Translator::translateVarDecl(const clang::VarDecl* varDecl) {
   string str;
   if (varDecl->getType().getTypePtr()->isBooleanType()) {
-    str = "bool ";
-    str.append(varDecl->getNameAsString());
-    str.append(" = ");
+    str.assign("bool " + varDecl->getNameAsString() + " = ");
     if (varDecl->hasInit()) {
       string init(util::RangeToStr(varDecl->getInit()->getSourceRange(), context));
-      str.append((init == "0") ? "false" : "true");
+      if (init == "0")
+        str.append("false");
+      else if (init == "1")
+        str.append("true");
+      else
+        str.append(init);
     } else {
       str.append("*");
     }
@@ -113,6 +116,15 @@ Translator::replaceAssignOp(std::string& expr) const {
   auto found = expr.find('=');
   if (found != string::npos)
     expr.insert(found, ":");
+}
+
+void
+Translator::replaceEqualsOp(string& expr) const {
+  auto found = expr.find("==");
+  while (found != string::npos) {
+    expr.replace(found, 2, "=");
+    found = expr.find("==");
+  }
 }
 
 void
@@ -210,6 +222,7 @@ Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
   string str("assume(");
   str.append(util::RangeToStr(condition->getSourceRange(), context));
   str.append(");");
+  replaceEqualsOp(str);
   outs << indentStr << analyzer.getLocString(block) << str << endl;
 }
 
