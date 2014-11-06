@@ -32,7 +32,7 @@ void
 TranslateAction::EndSourceFileAction() {
   std::ofstream outFile;
   outFile.open(outFileName, std::ios_base::trunc);
-  outFile << outStream.rdbuf() << std::endl;
+  outFile << outStream.rdbuf();
   outFile.flush();
   outFile.close();
 }

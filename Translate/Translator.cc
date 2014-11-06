@@ -89,7 +89,7 @@ Translator::unindent() {
 
 void
 Translator::beginFunction(const FunctionDecl* funcDecl) {
-  outs << indentStr << funcDecl->getNameAsString() << " {" << endl;
+  outs << endl << indentStr << funcDecl->getNameAsString() << " {" << endl;
   indent();
 }
 
