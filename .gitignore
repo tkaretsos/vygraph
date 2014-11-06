@@ -12,7 +12,7 @@ vygraph
 build
 *.o
 *.inlined.c
-*.vyc
+*.mmn
 *.autosave
 *.kdev4
 *.kate-swp
