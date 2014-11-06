@@ -13,16 +13,16 @@
 #endif
 
 #ifdef __clang__
-  void vy_spawn(...)    __attribute__((overloadable));
-  void vy_join(...)     __attribute__((overloadable));
+  void fork(...)    __attribute__((overloadable));
+  void join(...)    __attribute__((overloadable));
 #elif __GNUC__
-  #define vy_spawn(name, ...)                                                  \
-    void vy_spawn_##name() __attribute__((weak));                              \
-    vy_spawn_##name(__VA_ARGS__);
+  #define fork(name, ...)                                                      \
+    void fork_##name() __attribute__((weak));                                  \
+    fork_##name(__VA_ARGS__);
 
-  #define vy_join(name, ...)                                                   \
-    void vy_join_##name() __attribute__((weak));                               \
-    vy_join_##name(__VA_ARGS__);
+  #define join(name, ...)                                                      \
+    void join_##name() __attribute__((weak));                                  \
+    join_##name(__VA_ARGS__);
 #endif
 
 void vy_atomic_begin()  __attribute__((weak));
