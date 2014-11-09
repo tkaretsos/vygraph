@@ -18,10 +18,14 @@ public:
 
   const clang::CFG* getCFG() const;
   const clang::DominatorTree& getDomTree() const;
+  const util::PostDominatorTree& getPostDomTree() const;
   const clang::CFGBlock* findFirstPostDominator(const clang::CFGBlock&) const;
 
   std::string getLocString(const clang::CFGBlock&, bool = false);
   std::string getTerminatorFalseLoc(const clang::CFGBlock&);
+
+  const std::string& getFirstLoc(const clang::CFGBlock&);
+  const std::string& getLastLoc(const clang::CFGBlock&);
 
   void print() const;
 

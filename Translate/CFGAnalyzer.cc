@@ -78,6 +78,11 @@ CFGAnalyzer::getDomTree() const {
   return domTree;
 }
 
+const util::PostDominatorTree&
+CFGAnalyzer::getPostDomTree() const {
+  return postDomTree;
+}
+
 const CFGBlock*
 CFGAnalyzer::findFirstPostDominator(const CFGBlock& block) const {
   return postDomTree.findNearestCommonDominator(*block.succ_begin(),
@@ -166,6 +171,16 @@ CFGAnalyzer::atomicEnd(const CFGBlock& block) {
   } else {
     cout << "no mutual domination" << endl;
   }
+}
+
+const string&
+CFGAnalyzer::getFirstLoc(const CFGBlock& block) {
+  return locations.at(block.getBlockID()).front();
+}
+
+const string&
+CFGAnalyzer::getLastLoc(const CFGBlock& block) {
+  return locations.at(block.getBlockID()).back();
 }
 
 }
