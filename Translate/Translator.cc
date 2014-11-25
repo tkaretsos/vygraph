@@ -64,7 +64,8 @@ Translator::writeCFG(const CFGBlock& block) {
 
   writeStatements(block);
   if (block.succ_size() > 1) {
-    writeCFG(**block.succ_begin());
+    for (auto succ = block.succ_rbegin() + 1; succ != block.succ_rend(); ++succ)
+      writeCFG(**succ);
     writeTerminatorFalse(block);
     if (hasElsePart(block))
       writeCFG(**block.succ_rbegin());
@@ -204,6 +205,13 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
   stmtStr.append(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
                                   context));
   stmtStr.append("));");
+
+  auto found = stmtStr.find("non_deterministic");
+  if (found != string::npos) {
+    outs << indentStr << analyzer.getTerminatorFalseLoc(block) << "assume(true);" << endl;
+    return;
+  }
+
   replaceEqualsOp(stmtStr);
 
   outs << indentStr << analyzer.getTerminatorFalseLoc(block) << stmtStr << endl;
@@ -221,6 +229,14 @@ Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
 
 void
 Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
+
+  auto condStr = util::RangeToStr(condition->getSourceRange(), context);
+  auto found = condStr.find("non_deterministic");
+  if (found != string::npos) {
+    outs << indentStr << analyzer.getLocString(block) << "assume(true);" << endl;
+    return;
+  }
+
   string str("assume(");
   str.append(util::RangeToStr(condition->getSourceRange(), context));
   str.append(");");
