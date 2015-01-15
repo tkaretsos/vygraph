@@ -67,7 +67,7 @@ Translator::writeCFG(const CFGBlock& block) {
     for (auto succ = block.succ_rbegin() + 1; succ != block.succ_rend(); ++succ)
       writeCFG(**succ);
     writeTerminatorFalse(block);
-    if (hasElsePart(block))
+    if (!analyzer.getPostDomTree().dominates(*block.succ_rbegin(), &block))
       writeCFG(**block.succ_rbegin());
     if (auto postdom = analyzer.findFirstPostDominator(block)) {
       if (analyzer.getDomTree().dominates(&block, postdom))
@@ -267,13 +267,6 @@ Translator::writeCustomFunctionCall(const CFGBlock& block, const CallExpr* call)
   }
 
   writeDefaultStmt(block, call);
-}
-
-bool
-Translator::hasElsePart(const CFGBlock& block) const {
-  if (auto postdom = analyzer.findFirstPostDominator(block))
-    return postdom->getBlockID() != (*block.succ_rbegin())->getBlockID();
-  return false;
 }
 
 } // namespace vy
