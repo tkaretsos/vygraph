@@ -64,9 +64,10 @@ Translator::writeCFG(const CFGBlock& block) {
 
   writeStatements(block);
   if (block.succ_size() > 1) {
-    writeCFG(**block.succ_begin());
+    for (auto succ = block.succ_rbegin() + 1; succ != block.succ_rend(); ++succ)
+      writeCFG(**succ);
     writeTerminatorFalse(block);
-    if (hasElsePart(block))
+    if (!analyzer.getPostDomTree().dominates(*block.succ_rbegin(), &block))
       writeCFG(**block.succ_rbegin());
     if (auto postdom = analyzer.findFirstPostDominator(block)) {
       if (analyzer.getDomTree().dominates(&block, postdom))
@@ -205,6 +206,14 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
                                   context));
   stmtStr.append("));");
 
+  auto found = stmtStr.find("non_deterministic");
+  if (found != string::npos) {
+    outs << indentStr << analyzer.getTerminatorFalseLoc(block) << "assume(true);" << endl;
+    return;
+  }
+
+  replaceEqualsOp(stmtStr);
+
   outs << indentStr << analyzer.getTerminatorFalseLoc(block) << stmtStr << endl;
 }
 
@@ -212,6 +221,7 @@ void
 Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
   string exprStr(util::RangeToStr(expr->getSourceRange(), context));
   string str("assume(!(" + exprStr + "));");
+  replaceEqualsOp(str);
   outs << indentStr << analyzer.getLocString(block, true) << str << endl;
 
   writeAssume(block, expr);
@@ -219,6 +229,14 @@ Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
 
 void
 Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
+
+  auto condStr = util::RangeToStr(condition->getSourceRange(), context);
+  auto found = condStr.find("non_deterministic");
+  if (found != string::npos) {
+    outs << indentStr << analyzer.getLocString(block) << "assume(true);" << endl;
+    return;
+  }
+
   string str("assume(");
   str.append(util::RangeToStr(condition->getSourceRange(), context));
   str.append(");");
@@ -249,13 +267,6 @@ Translator::writeCustomFunctionCall(const CFGBlock& block, const CallExpr* call)
   }
 
   writeDefaultStmt(block, call);
-}
-
-bool
-Translator::hasElsePart(const CFGBlock& block) const {
-  if (auto postdom = analyzer.findFirstPostDominator(block))
-    return postdom->getBlockID() != (*block.succ_rbegin())->getBlockID();
-  return false;
 }
 
 } // namespace vy

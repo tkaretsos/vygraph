@@ -49,7 +49,10 @@ CFGAnalyzer::analyze(const clang::FunctionDecl* funcDecl) {
     currLocs[(*block)->getBlockID()] = v.begin();
   }
 
-  locations[(*cfg->getEntry().succ_begin())->getBlockID()].front().assign("ent");
+  auto firstBlock = cfg->getEntry().succ_begin();
+  while (locations[(*firstBlock)->getBlockID()].empty())
+    firstBlock = (*firstBlock)->succ_begin();
+  locations[(*firstBlock)->getBlockID()].front().assign("ent");
   locations[cfg->getExit().getBlockID()].push_back("ext");
 
   if (!atomicStack.empty())
@@ -73,6 +76,11 @@ CFGAnalyzer::getCFG() const {
 const DominatorTree&
 CFGAnalyzer::getDomTree() const {
   return domTree;
+}
+
+const util::PostDominatorTree&
+CFGAnalyzer::getPostDomTree() const {
+  return postDomTree;
 }
 
 const CFGBlock*
@@ -163,6 +171,16 @@ CFGAnalyzer::atomicEnd(const CFGBlock& block) {
   } else {
     cout << "no mutual domination" << endl;
   }
+}
+
+const string&
+CFGAnalyzer::getFirstLoc(const CFGBlock& block) {
+  return locations.at(block.getBlockID()).front();
+}
+
+const string&
+CFGAnalyzer::getLastLoc(const CFGBlock& block) {
+  return locations.at(block.getBlockID()).back();
 }
 
 }
