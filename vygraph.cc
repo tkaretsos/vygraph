@@ -39,6 +39,6 @@ int main(int argc, const char **argv) {
   analyzer.analyze();
 
   tool.run(newFrontendActionFactory<vy::InlineAction>());
-//   tool.run(newFrontendActionFactory<vy::TranslateAction>());
+  tool.run(newFrontendActionFactory<vy::TranslateAction>());
   return 0;
 }

@@ -40,6 +40,8 @@ class FunctionManager {
 
   container::iterator find(const std::string&);
 public:
+  std::string fileContents;
+
   FunctionManager();
   void addUserFunction(const clang::FunctionDecl*);
   bool isUserDefined(const std::string&);

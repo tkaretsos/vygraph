@@ -3,6 +3,7 @@
 #include "clang/Frontend/CompilerInstance.h"
 
 #include "InlineASTConsumer.hh"
+#include "Analysis/FunctionManager.hh"
 
 namespace vy {
 
@@ -17,20 +18,23 @@ InlineAction::CreateASTConsumer(CompilerInstance& CI, llvm::StringRef file) {
 void
 InlineAction::EndSourceFileAction() {
   auto& SM = rewriter.getSourceMgr();
-  std::string filename = SM.getFileEntryForID(SM.getMainFileID())->getName();
-  size_t found = filename.find_last_of('.');
-  if (found != std::string::npos)
-    filename.insert(found, ".inlined");
-  else
-    filename.append(".inlined.c");
-  std::string errors;
-  llvm::raw_fd_ostream outfile(filename.c_str(), errors);
-  if (!errors.empty())
-    llvm::errs() << errors.c_str() << "\n";
-  else {
-    rewriter.getEditBuffer(SM.getMainFileID()).write(outfile);
+//   std::string filename = SM.getFileEntryForID(SM.getMainFileID())->getName();
+//   size_t found = filename.find_last_of('.');
+//   if (found != std::string::npos)
+//     filename.insert(found, ".inlined");
+//   else
+//     filename.append(".inlined.c");
+//   std::string errors;
+//   llvm::raw_fd_ostream outfile(filename.c_str(), errors);
+//   if (!errors.empty())
+//     llvm::errs() << errors.c_str() << "\n";
+//   else {
+//     rewriter.getEditBuffer(SM.getMainFileID()).write(outfile);
+    llvm::raw_string_ostream rso(functionMgr.fileContents);
+    rewriter.getEditBuffer(SM.getMainFileID()).write(rso);
+    rso.flush();
 //     rewriter.getEditBuffer(SM.getMainFileID()).write(llvm::outs());
-  }
+//   }
 }
 
 } // namespace vy

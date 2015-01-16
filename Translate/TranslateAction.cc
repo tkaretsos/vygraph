@@ -3,8 +3,10 @@
 #include <fstream>
 
 #include "clang/Frontend/CompilerInstance.h"
+#include "llvm/Support/MemoryBuffer.h"
 
 #include "TranslateASTConsumer.hh"
+#include "Analysis/FunctionManager.hh"
 
 namespace vy {
 
@@ -14,6 +16,10 @@ TranslateAction::TranslateAction() { }
 
 ASTConsumer*
 TranslateAction::CreateASTConsumer(CompilerInstance& CI, llvm::StringRef file) {
+  auto& SM = CI.getSourceManager();
+  auto memBuffer = llvm::MemoryBuffer::getMemBuffer(functionMgr.fileContents);
+  auto fid = SM.createFileIDForMemBuffer(memBuffer);
+  SM.setMainFileID(fid);
   return new TranslateASTConsumer(CI.getASTContext(), outStream);
 }
 
