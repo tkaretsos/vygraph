@@ -27,10 +27,10 @@ int ret(int x_ret) {
 }
 
 int main() {
-  vy_spawn(sub);
-  vy_spawn(add, 5);
-  vy_join(sub);
-  vy_join(add);
+  fork(sub);
+  fork(add, 5);
+  join(sub);
+  join(add);
   vy_atomic_begin();
   add(5);
   vy_atomic_end();

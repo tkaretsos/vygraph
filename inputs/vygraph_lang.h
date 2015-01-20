@@ -12,9 +12,12 @@
 #define false   0
 #endif
 
+#define and     &=
+#define or      |=
+
 #ifdef __clang__
-  void fork(...)    __attribute__((overloadable));
-  void join(...)    __attribute__((overloadable));
+void fork(...)    __attribute__((overloadable));
+void join(...)    __attribute__((overloadable));
 #elif __GNUC__
   #define fork(name, ...)                                                      \
     void fork_##name() __attribute__((weak));                                  \
@@ -25,10 +28,15 @@
     join_##name(__VA_ARGS__);
 #endif
 
-void vy_atomic_begin()  __attribute__((weak));
-void vy_atomic_end()    __attribute__((weak));
+void vy_atomic_begin()      __attribute__((weak));
+void vy_atomic_end()        __attribute__((weak));
 
-void vy_assert(bool)    __attribute__((weak));
-void vy_assume(bool)    __attribute__((weak));
+void vy_assert(bool)        __attribute__((weak));
+void vy_assume(bool)        __attribute__((weak));
+
+int non_deterministic()    __attribute__((weak));
+
+
+#define NON_DET_WHILE while (non_deterministic())
 
 #endif /* VYGRAPH_LANG_H */
