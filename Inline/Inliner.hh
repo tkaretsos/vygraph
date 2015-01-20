@@ -24,8 +24,14 @@ class Inliner {
 public:
   Inliner(const clang::ASTContext&, clang::Rewriter&);
 
-  void init(clang::CallExpr*);
-  void doInline();
+  void Init(clang::CallExpr*);
+  void Inline();
+
+private:
+  const clang::ASTContext& context;
+  clang::Rewriter& rewriter;
+  clang::CallExpr* call;
+  std::map<std::string, std::string> subMap;
 
   void inlineStmt(const clang::Stmt*, std::string&);
   void inlineReturnStmt(std::string&);
@@ -36,12 +42,6 @@ public:
 
   void findSubstitutions(clang::Stmt*, std::vector<util::ClangBaseWrapper>&);
   void replaceVarsInString(clang::Stmt*, std::string&);
-
-private:
-  const clang::ASTContext& context;
-  clang::Rewriter& rewriter;
-  clang::CallExpr* call;
-  std::map<std::string, std::string> subMap;
 };
 
 } // namespace vy

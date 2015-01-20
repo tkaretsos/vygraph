@@ -14,8 +14,8 @@ InlineASTVisitor::InlineASTVisitor(Rewriter& rewriter, ASTContext& context)
 bool
 InlineASTVisitor::VisitCallExpr(CallExpr* call) {
   if (functionMgr.isUserDefined(call->getDirectCallee()->getNameAsString())) {
-    inliner.init(call);
-    inliner.doInline();
+    inliner.Init(call);
+    inliner.Inline();
   }
   return true;
 }

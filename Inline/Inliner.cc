@@ -19,7 +19,7 @@ Inliner::Inliner(const ASTContext& context, Rewriter& rewriter)
 { }
 
 void
-Inliner::init(CallExpr* call) {
+Inliner::Init(CallExpr* call) {
   this->call = call;
   this->subMap = functionMgr.getVarSubs(call);
 
@@ -29,7 +29,7 @@ Inliner::init(CallExpr* call) {
 }
 
 void
-Inliner::doInline() {
+Inliner::Inline() {
   if (functionMgr.isSimpleCall(call))
     deleteCallText();
   if (call->getNumArgs() > 0)
