@@ -14,6 +14,9 @@ public:
 
 private:
   clang::Rewriter rewriter;
+
+  void writeToFile();
+  void writeToMemory();
 };
 
 } // namespace vy

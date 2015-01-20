@@ -2,43 +2,51 @@
 
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
-// Declares llvm::cl::extrahelp.
 #include "llvm/Support/CommandLine.h"
 
-#include "Inline/InlineAction.hh"
-
-#include "Analysis/FunctionManager.hh"
 #include "Analysis/Analyzer.hh"
-
+#include "Analysis/FunctionManager.hh"
+#include "Inline/InlineAction.hh"
 #include "Translate/TranslateAction.hh"
+#include "Utility/CLOptions.hh"
 
 using namespace clang::tooling;
-using namespace llvm::cl;
-
-using namespace clang;
-using namespace clang::ast_matchers;
-
-// Apply a custom category to all command-line options so that they are the
-// only ones displayed.
-static OptionCategory MyToolCategory("vygraph options");
-
-// CommonOptionsParser declares HelpMessage with a description of the common
-// command-line options related to the compilation database and input files.
-// It's nice to have this help message in all tools.
-static extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
-
-// A help message for this specific tool can be added afterwards.
-static extrahelp MoreHelp("\nMore help text...");
+using namespace llvm;
+using namespace std;
+using namespace vy;
 
 int main(int argc, const char **argv) {
-  CommonOptionsParser optionsParser(argc, argv);
-  ClangTool tool(optionsParser.getCompilations(),
-                 optionsParser.getSourcePathList());
+  cl::OptionCategory vygraphCategory("vygraph options");
+  auto& clOptions = CLOptions::Instance();
+  clOptions.toolActionBits.reset(new cl::bits<CLOptions::ToolActionBit>(
+    cl::desc("Choose a specific action to perform (optional):"),
+    cl::values(
+      clEnumValN(CLOptions::InlineOnly, "inline-only",
+                 "Only perform C inlining"),
+      clEnumValN(CLOptions::TranslateOnly, "translate-only",
+                 "Only perform translation from C to Multimono"),
+      clEnumValEnd
+    ),
+    cl::cat(vygraphCategory)
+  ));
 
-  vy::Analyzer analyzer(tool);
+  CommonOptionsParser optParser(argc, argv);
+
+  if (clOptions.inlineOnly() && clOptions.translateOnly()) {
+    cout << R"(Error: You cannot use both "-inline-only" and "-translate-only" options.)";
+    cout << endl << "Exiting..." << endl;
+
+    return 1;
+  }
+
+  ClangTool tool(optParser.getCompilations(), optParser.getSourcePathList());
+  Analyzer analyzer(tool);
   analyzer.analyze();
 
-  tool.run(newFrontendActionFactory<vy::InlineAction>());
-  tool.run(newFrontendActionFactory<vy::TranslateAction>());
+  if (!clOptions.translateOnly())
+    tool.run(newFrontendActionFactory<InlineAction>());
+  if (!clOptions.inlineOnly())
+    tool.run(newFrontendActionFactory<TranslateAction>());
+
   return 0;
 }

@@ -13,6 +13,7 @@ add_clang_executable(vygraph
   Translate/Translator.cc
   Utility/Functions.cc
   Utility/PostDominatorTree.cc
+  Utility/CLOptions.cc
   vygraph.cc
 )
 

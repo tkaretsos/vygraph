@@ -7,6 +7,7 @@
 
 #include "TranslateASTConsumer.hh"
 #include "Analysis/FunctionManager.hh"
+#include "Utility/CLOptions.hh"
 
 namespace vy {
 
@@ -15,11 +16,13 @@ using namespace clang;
 TranslateAction::TranslateAction() { }
 
 ASTConsumer*
-TranslateAction::CreateASTConsumer(CompilerInstance& CI, llvm::StringRef file) {
-  auto& SM = CI.getSourceManager();
-  auto memBuffer = llvm::MemoryBuffer::getMemBuffer(functionMgr.fileContents);
-  auto fid = SM.createFileIDForMemBuffer(memBuffer);
-  SM.setMainFileID(fid);
+TranslateAction::CreateASTConsumer(CompilerInstance& CI, StringRef file) {
+  if (!CLOptions::Instance().translateOnly()) {
+    auto& SM = CI.getSourceManager();
+    auto memBuffer = llvm::MemoryBuffer::getMemBuffer(functionMgr.fileContents);
+    auto fid = SM.createFileIDForMemBuffer(memBuffer);
+    SM.setMainFileID(fid);
+  }
   return new TranslateASTConsumer(CI.getASTContext(), outStream);
 }
 
@@ -42,6 +45,5 @@ TranslateAction::EndSourceFileAction() {
   outFile.flush();
   outFile.close();
 }
-
 
 } // namespace vy

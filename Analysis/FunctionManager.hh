@@ -39,6 +39,7 @@ class FunctionManager {
   FunctionManager(const FunctionManager&);
 
   container::iterator find(const std::string&);
+
 public:
   std::string fileContents;
 
