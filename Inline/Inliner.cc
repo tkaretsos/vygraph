@@ -71,7 +71,7 @@ void
 Inliner::inlineBody() {
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
   for (auto stmt = body->body_begin(); stmt != body->body_end(); ++stmt) {
-    string insertStr(util::RangeToStr((*stmt)->getSourceRange(), context));
+    string insertStr(util::range_to_str((*stmt)->getSourceRange(), context));
     replaceVarsInString(*stmt, insertStr);
     if (isa<ReturnStmt>(*stmt) ) {
       if (!functionMgr.isSimpleCall(call))

@@ -13,7 +13,8 @@ class ASTContext;
 namespace vy {
 namespace util {
 
-std::string RangeToStr(const clang::SourceRange&, const clang::ASTContext&);
+std::string range_to_str(const clang::SourceRange& range,
+                         const clang::ASTContext& context);
 
 std::string random_alphanum(size_t = 3);
 

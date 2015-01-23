@@ -22,7 +22,7 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
   if (varDecl->getType().getTypePtr()->isBooleanType()) {
     str.assign("bool " + varDecl->getNameAsString() + " = ");
     if (varDecl->hasInit()) {
-      string init(util::RangeToStr(varDecl->getInit()->getSourceRange(), context));
+      string init(util::range_to_str(varDecl->getInit()->getSourceRange(), context));
       if (init == "0")
         str.append("false");
       else if (init == "1")
@@ -33,7 +33,7 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
       str.append("*");
     }
   } else {
-    str = util::RangeToStr(varDecl->getSourceRange(), context);
+    str = util::range_to_str(varDecl->getSourceRange(), context);
     if (!varDecl->hasInit())
       str.append(" = *");
   }
@@ -179,7 +179,7 @@ Translator::writeStmt(const CFGBlock& block, const Stmt* stmt) {
 
 void
 Translator::writeDefaultStmt(const CFGBlock& block, const Stmt* stmt) {
-  string stmtStr(util::RangeToStr(stmt->getSourceRange(), context));
+  string stmtStr(util::range_to_str(stmt->getSourceRange(), context));
   replaceAssignOp(stmtStr);
   stmtStr.append(";");
   outs << indentStr << analyzer.getLocString(block) << stmtStr << endl;
@@ -188,9 +188,9 @@ Translator::writeDefaultStmt(const CFGBlock& block, const Stmt* stmt) {
 void
 Translator::writeBinaryOp(const CFGBlock& block, const BinaryOperator* binOp) {
   if (binOp->getLHS()->getType().getTypePtr()->isBooleanType()) {
-    string rhsStr(util::RangeToStr(binOp->getRHS()->getSourceRange(), context));
+    string rhsStr(util::range_to_str(binOp->getRHS()->getSourceRange(), context));
     if (rhsStr == "0" || rhsStr == "1") {
-      string str(util::RangeToStr(binOp->getLHS()->getSourceRange(), context));
+      string str(util::range_to_str(binOp->getLHS()->getSourceRange(), context));
       str.append(" := ");
       str.append((rhsStr == "0") ? "false" : "true");
       str.append(";");
@@ -205,8 +205,8 @@ Translator::writeBinaryOp(const CFGBlock& block, const BinaryOperator* binOp) {
 void
 Translator::writeTerminatorFalse(const CFGBlock& block) {
   string stmtStr("assume(!(");
-  stmtStr.append(util::RangeToStr(block.getTerminatorCondition()->getSourceRange(),
-                                  context));
+  stmtStr.append(util::range_to_str(block.getTerminatorCondition()->getSourceRange(),
+                                    context));
   stmtStr.append("));");
 
   auto found = stmtStr.find("non_deterministic");
@@ -222,7 +222,7 @@ Translator::writeTerminatorFalse(const CFGBlock& block) {
 
 void
 Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
-  string exprStr(util::RangeToStr(expr->getSourceRange(), context));
+  string exprStr(util::range_to_str(expr->getSourceRange(), context));
   string str("assume(!(" + exprStr + "));");
   replaceEqualsOp(str);
   outs << indentStr << analyzer.getLocString(block, true) << str << endl;
@@ -232,7 +232,7 @@ Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
 
 void
 Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
-  auto condStr = util::RangeToStr(condition->getSourceRange(), context);
+  auto condStr = util::range_to_str(condition->getSourceRange(), context);
   auto found = condStr.find("non_deterministic");
   if (found != string::npos) {
     outs << indentStr << analyzer.getLocString(block) << "assume(true);" << endl;
@@ -240,7 +240,7 @@ Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
   }
 
   string str("assume(");
-  str.append(util::RangeToStr(condition->getSourceRange(), context));
+  str.append(util::range_to_str(condition->getSourceRange(), context));
   str.append(");");
   replaceEqualsOp(str);
   outs << indentStr << analyzer.getLocString(block) << str << endl;

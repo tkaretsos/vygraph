@@ -8,7 +8,7 @@ namespace vy {
 namespace util {
 
 std::string
-RangeToStr(const clang::SourceRange& range, const clang::ASTContext& context) {
+range_to_str(const clang::SourceRange& range, const clang::ASTContext& context) {
   auto& SM = context.getSourceManager();
   auto charRange = clang::CharSourceRange::getTokenRange(range);
   auto beginLoc = SM.getSpellingLoc(charRange.getBegin());
@@ -33,3 +33,5 @@ random_alphanum(size_t length) {
 
 } // namespace util
 } // namespace vy
+
+/** @file */
