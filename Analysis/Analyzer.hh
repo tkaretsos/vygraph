@@ -4,9 +4,11 @@
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 
 namespace clang {
-  namespace tooling {
-    class ClangTool;
-  }
+namespace tooling {
+
+class ClangTool;
+
+}
 }
 
 namespace vy {
@@ -28,6 +30,7 @@ private:
     virtual void run(const clang::ast_matchers::MatchFinder::MatchResult&);
     const clang::CallExpr* findCallInStmt(const clang::Stmt*);
   };
+
 };
 
 } // namespace vy

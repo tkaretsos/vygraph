@@ -135,16 +135,6 @@ CFGAnalyzer::getTerminatorFalseLoc(const CFGBlock& block) {
   return loc;
 }
 
-void
-CFGAnalyzer::print() const {
-  for (auto& p : locations) {
-    cout << p.first << " -> ";
-    for (auto v : p.second)
-      cout << v << " ";
-    cout << endl;
-  }
-}
-
 void CFGAnalyzer::init(const clang::FunctionDecl* funcDecl) {
   pcCounter = 0;
   analysisContext.reset(new AnalysisDeclContext(&analysisManager, funcDecl));

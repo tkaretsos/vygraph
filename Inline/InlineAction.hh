@@ -17,6 +17,7 @@ private:
 
   void writeToFile();
   void writeToMemory();
+
 };
 
 } // namespace vy

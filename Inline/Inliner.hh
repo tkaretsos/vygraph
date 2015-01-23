@@ -17,7 +17,9 @@ class Stmt;
 namespace vy {
 
 namespace util {
-  class ClangBaseWrapper;
+
+class ClangBaseWrapper;
+
 }
 
 class Inliner {
@@ -42,6 +44,7 @@ private:
 
   void findSubstitutions(clang::Stmt*, std::vector<util::ClangBaseWrapper>&);
   void replaceVarsInString(clang::Stmt*, std::string&);
+
 };
 
 } // namespace vy

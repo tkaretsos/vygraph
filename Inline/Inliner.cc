@@ -1,8 +1,8 @@
 #include "Inliner.hh"
 
 #include "clang/AST/ASTContext.h"
-#include "clang/AST/Expr.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/Expr.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 
 #include "Analysis/FunctionManager.hh"
@@ -32,8 +32,10 @@ void
 Inliner::Inline() {
   if (functionMgr.isSimpleCall(call))
     deleteCallText();
+
   if (call->getNumArgs() > 0)
     inlineArguments();
+
   inlineBody();
 }
 
@@ -65,16 +67,17 @@ Inliner::inlineArguments() {
   }
 }
 
-void Inliner::inlineBody() {
+void
+Inliner::inlineBody() {
   auto body = cast<CompoundStmt>(call->getDirectCallee()->getBody());
-  for (auto s = body->body_begin(); s != body->body_end(); ++s) {
-    string insertStr(util::RangeToStr((*s)->getSourceRange(), context));
-    replaceVarsInString(*s, insertStr);
-    if (isa<ReturnStmt>(*s) ) {
+  for (auto stmt = body->body_begin(); stmt != body->body_end(); ++stmt) {
+    string insertStr(util::RangeToStr((*stmt)->getSourceRange(), context));
+    replaceVarsInString(*stmt, insertStr);
+    if (isa<ReturnStmt>(*stmt) ) {
       if (!functionMgr.isSimpleCall(call))
         inlineReturnStmt(insertStr);
     } else
-      inlineStmt(*s, insertStr);
+      inlineStmt(*stmt, insertStr);
   }
 }
 
@@ -88,10 +91,12 @@ void
 Inliner::findSubstitutions(Stmt* stmt, vector<util::ClangBaseWrapper>& v) {
   if (DeclRefExpr* ref = dyn_cast<DeclRefExpr>(stmt))
     v.emplace_back(ref);
+
   if (DeclStmt* decl = dyn_cast<DeclStmt>(stmt)) {
     for (auto d = decl->decl_begin(); d != decl->decl_end(); ++d)
       v.emplace_back(cast<VarDecl>(*d));
   }
+
   for (auto c : stmt->children()) {
     if (c != nullptr)
       findSubstitutions(c, v);
@@ -103,7 +108,7 @@ Inliner::replaceVarsInString(Stmt* stmt, string& s) {
   vector<util::ClangBaseWrapper> subs;
   findSubstitutions(stmt, subs);
   reverse(subs.begin(), subs.end());
-  for (auto& sub : subs) {
+  for (util::ClangBaseWrapper& sub : subs) {
     auto found = subMap.find(sub.getAsString(rewriter));
     if (found != subMap.end()) {
       auto offset = sub.getLocStart().getRawEncoding() -

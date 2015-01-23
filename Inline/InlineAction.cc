@@ -2,8 +2,8 @@
 
 #include "clang/Frontend/CompilerInstance.h"
 
-#include "InlineASTConsumer.hh"
 #include "Analysis/FunctionManager.hh"
+#include "InlineASTConsumer.hh"
 #include "Utility/CLOptions.hh"
 
 namespace vy {

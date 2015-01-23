@@ -16,13 +16,13 @@ TranslateASTConsumer::HandleTopLevelDecl(DeclGroupRef decls) {
   for (auto decl = decls.begin(); decl != decls.end(); ++decl) {
     if (auto varDecl = dyn_cast<VarDecl>(*decl))
       translator.translateVarDecl(varDecl);
+
     if (auto funcDecl = dyn_cast<FunctionDecl>(*decl)) {
-      if (functionMgr.isUserDefined(funcDecl->getNameAsString()) ||
-          funcDecl->isMain()) {
+      if (functionMgr.isUserDefined(funcDecl->getNameAsString()) || funcDecl->isMain())
         translator.translateFunction(funcDecl);
-      }
     }
   }
+
   return true;
 }
 

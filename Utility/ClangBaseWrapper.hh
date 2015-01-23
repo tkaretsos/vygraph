@@ -1,22 +1,15 @@
 #ifndef VYGRAPH_UTIL_CLANGBASEWRAPPER_H
 #define VYGRAPH_UTIL_CLANGBASEWRAPPER_H
 
+#include <clang/AST/Decl.h>
+#include <clang/AST/Stmt.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/AST/Stmt.h>
-#include <clang/AST/Decl.h>
 
 namespace vy {
 namespace util {
 
 class ClangBaseWrapper {
-  const clang::Stmt* stmtPtr;
-  const clang::NamedDecl* namedDeclPtr;
-
-  ClangBaseWrapper() = delete;
-//   ClangBaseWrapper(const ClangBaseWrapper&) = delete;
-//   void operator=(const ClangBaseWrapper&) = delete;
-
 public:
   ClangBaseWrapper(const clang::Stmt* stmt) :
     stmtPtr(stmt), namedDeclPtr(nullptr)
@@ -44,6 +37,13 @@ public:
     else
       return namedDeclPtr->getDeclName().getAsString();
   }
+
+private:
+  const clang::Stmt* stmtPtr;
+  const clang::NamedDecl* namedDeclPtr;
+
+  ClangBaseWrapper() = delete;
+
 };
 
 } // namespace util

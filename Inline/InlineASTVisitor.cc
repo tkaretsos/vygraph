@@ -17,6 +17,7 @@ InlineASTVisitor::VisitCallExpr(CallExpr* call) {
     inliner.Init(call);
     inliner.Inline();
   }
+
   return true;
 }
 

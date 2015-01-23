@@ -8,10 +8,13 @@
 namespace vy {
 
 class TranslateASTConsumer : public clang::ASTConsumer {
-  Translator translator;
 public:
   TranslateASTConsumer(clang::ASTContext&, std::stringstream&);
   bool HandleTopLevelDecl(clang::DeclGroupRef) override;
+
+private:
+  Translator translator;
+
 };
 
 } // namespace vy

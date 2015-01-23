@@ -13,8 +13,6 @@ namespace vy {
 
 using namespace clang;
 
-TranslateAction::TranslateAction() { }
-
 ASTConsumer*
 TranslateAction::CreateASTConsumer(CompilerInstance& CI, StringRef file) {
   if (!CLOptions::Instance().translateOnly()) {
@@ -23,6 +21,7 @@ TranslateAction::CreateASTConsumer(CompilerInstance& CI, StringRef file) {
     auto fid = SM.createFileIDForMemBuffer(memBuffer);
     SM.setMainFileID(fid);
   }
+
   return new TranslateASTConsumer(CI.getASTContext(), outStream);
 }
 
@@ -34,6 +33,7 @@ TranslateAction::BeginSourceFileAction(CompilerInstance& CI, StringRef filename)
     outFileName.replace(outFileName.begin() + found, outFileName.end(), ".mmn");
   else
     outFileName.append(".mmn");
+
   return true;
 }
 

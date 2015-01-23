@@ -1,5 +1,6 @@
 #include "Functions.hh"
 
+#include "clang/AST/ASTContext.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Lex/Lexer.h"
 
@@ -26,7 +27,7 @@ random_alphanum(size_t length) {
                          "abcdefghijklmnopqrstuvwxyz";
   std::string str(length, 0);
   auto randchar = [&]() { return charset[rand() % (sizeof(charset) - 1)]; };
-  generate_n(str.begin(), length, randchar);
+  std::generate_n(str.begin(), length, randchar);
   return str;
 }
 

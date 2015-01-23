@@ -1,7 +1,5 @@
 #include "CLOptions.hh"
 
-using namespace llvm::cl;
-
 namespace vy {
 
 bool CLOptions::inlineOnly() {

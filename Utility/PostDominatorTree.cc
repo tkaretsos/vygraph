@@ -3,8 +3,6 @@
 #include "clang/Analysis/AnalysisContext.h"
 #include "llvm/Analysis/Dominators.h"
 
-#include <iostream>
-
 namespace vy {
 namespace util {
 

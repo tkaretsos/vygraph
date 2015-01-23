@@ -14,6 +14,7 @@ public:
 
 private:
   InlineASTVisitor inlineVisitor;
+
 };
 
 } // namespace vy

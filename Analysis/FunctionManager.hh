@@ -11,39 +11,37 @@
 namespace vy {
 
 struct CallInfo {
-  CallInfo();
-  CallInfo(unsigned, bool);
-
+public:
   unsigned ID;
   bool isSimpleCall;
   clang::SourceLocation lineStartLoc;
+
+  CallInfo() = default;
+  CallInfo(unsigned, bool);
+
 };
 
 struct FunctionInfo {
-  FunctionInfo();
-  FunctionInfo(const clang::FunctionDecl*, bool = true);
-
+public:
   std::vector<CallInfo> calls;
   std::string name;
   bool deleteSource;
   std::map<std::string, std::string> varSubs;
 
+  FunctionInfo() = default;
+  FunctionInfo(const clang::FunctionDecl*, bool = true);
+
 private:
   void findDeclarations(clang::Stmt*);
+
 };
 
 class FunctionManager {
-  typedef std::vector<FunctionInfo> container;
-
-  container userFunctions_;
-  FunctionManager(const FunctionManager&);
-
-  container::iterator find(const std::string&);
-
 public:
   std::string fileContents;
 
-  FunctionManager();
+  FunctionManager() = default;
+
   void addUserFunction(const clang::FunctionDecl*);
   bool isUserDefined(const std::string&);
   void setDeleteSource(const std::string&, bool);
@@ -53,7 +51,14 @@ public:
   const clang::SourceLocation getInsertLoc(clang::CallExpr*);
   const clang::SourceLocation& getStmtLoc(clang::CallExpr*);
   const std::map<std::string, std::string>& getVarSubs(clang::CallExpr*);
-  void print();
+
+private:
+  std::vector<FunctionInfo> userFunctions_;
+
+  FunctionManager(const FunctionManager&);
+
+  std::vector<FunctionInfo>::iterator find(const std::string&);
+
 };
 
 extern FunctionManager functionMgr;

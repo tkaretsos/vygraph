@@ -34,9 +34,8 @@ Translator::translateVarDecl(const clang::VarDecl* varDecl) {
     }
   } else {
     str = util::RangeToStr(varDecl->getSourceRange(), context);
-    if (!varDecl->hasInit()) {
+    if (!varDecl->hasInit())
       str.append(" = *");
-    }
   }
 
   replaceAssignOp(str);
@@ -63,16 +62,21 @@ Translator::writeCFG(const CFGBlock& block) {
     return;
 
   writeStatements(block);
+
   if (block.succ_size() > 1) {
     for (auto succ = block.succ_rbegin() + 1; succ != block.succ_rend(); ++succ)
       writeCFG(**succ);
+
     writeTerminatorFalse(block);
+
     if (!analyzer.getPostDomTree().dominates(*block.succ_rbegin(), &block))
       writeCFG(**block.succ_rbegin());
+
     if (auto postdom = analyzer.findFirstPostDominator(block)) {
       if (analyzer.getDomTree().dominates(&block, postdom))
         writeCFG(*postdom);
     }
+
   } else if (analyzer.getDomTree().dominates(&block, *block.succ_begin())) {
     writeCFG(**block.succ_begin());
   }
@@ -134,9 +138,8 @@ Translator::writeStatements(const CFGBlock& block) {
     return;
 
   for (auto elem = block.begin(); elem != block.end() - 1; ++elem) {
-    if (auto cfgStmt = elem->getAs<CFGStmt>()) {
+    if (auto cfgStmt = elem->getAs<CFGStmt>())
       writeStmt(block, cfgStmt->getStmt());
-    }
   }
 
   if (auto cfgStmt = (block.rbegin())->getAs<CFGStmt>()) {
@@ -229,7 +232,6 @@ Translator::writeAssert(const CFGBlock& block, const Expr* expr) {
 
 void
 Translator::writeAssume(const CFGBlock& block, const Stmt* condition) {
-
   auto condStr = util::RangeToStr(condition->getSourceRange(), context);
   auto found = condStr.find("non_deterministic");
   if (found != string::npos) {

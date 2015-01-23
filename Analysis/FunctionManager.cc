@@ -9,30 +9,26 @@ using namespace clang;
 
 FunctionManager functionMgr;
 
-CallInfo::CallInfo() { }
-
 CallInfo::CallInfo(unsigned ID, bool isSimpleCall)
   : ID(ID), isSimpleCall(isSimpleCall)
 { }
 
-FunctionInfo::FunctionInfo() { }
-
 FunctionInfo::FunctionInfo(const FunctionDecl* decl, bool deleteSource) :
   name(decl->getNameAsString()), deleteSource(deleteSource) {
 
-  for (auto p = decl->param_begin(); p != decl->param_end(); ++p)
-    varSubs[(*p)->getNameAsString()] = (*p)->getNameAsString();
+  for (auto param = decl->param_begin(); param != decl->param_end(); ++param)
+    varSubs[(*param)->getNameAsString()] = (*param)->getNameAsString();
 
   auto body = cast<CompoundStmt>(decl->getBody());
-  for (auto s = body->body_begin(); s != body->body_end(); ++s)
-    findDeclarations(*s);
+  for (auto stmt = body->body_begin(); stmt != body->body_end(); ++stmt)
+    findDeclarations(*stmt);
 }
 
 void
 FunctionInfo::findDeclarations(Stmt* stmt) {
   if (DeclStmt* declStmt = dyn_cast<DeclStmt>(stmt)) {
-    for (auto d = declStmt->decl_begin(); d != declStmt->decl_end(); ++d)
-      if (VarDecl* varDecl = dyn_cast<VarDecl>(*d))
+    for (auto decl = declStmt->decl_begin(); decl != declStmt->decl_end(); ++decl)
+      if (VarDecl* varDecl = dyn_cast<VarDecl>(*decl))
         varSubs[varDecl->getNameAsString()] = varDecl->getNameAsString();
   }
 
@@ -41,14 +37,10 @@ FunctionInfo::findDeclarations(Stmt* stmt) {
       findDeclarations(c);
 }
 
-
-FunctionManager::FunctionManager() { }
-
-FunctionManager::container::iterator
+std::vector<FunctionInfo>::iterator
 FunctionManager::find(const std::string& name) {
-  return std::find_if(userFunctions_.begin(),
-                      userFunctions_.end(),
-                      [&](const FunctionInfo& fi) { return fi.name == name; });
+  auto pred = [&](const FunctionInfo& fi) { return fi.name == name; };
+  return std::find_if(userFunctions_.begin(), userFunctions_.end(), pred);
 }
 
 void
@@ -64,22 +56,20 @@ FunctionManager::isUserDefined(const std::string& name) {
 void
 FunctionManager::setDeleteSource(const std::string& functionName, bool value) {
   auto found = find(functionName);
-  if (found != userFunctions_.end()) {
+  if (found != userFunctions_.end())
     found->deleteSource = value;
-  }
 }
 
 void
 FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall) {
   auto found = find(call->getDirectCallee()->getNameAsString());
-  if (found != userFunctions_.end()) {
+  if (found != userFunctions_.end())
     found->calls.emplace_back(call->getLocStart().getRawEncoding(), isSimpleCall);
-  }
 }
 
 void
 FunctionManager::addCall(const clang::CallExpr* call, bool isSimpleCall,
-                              const clang::SourceLocation& lineLoc) {
+                         const clang::SourceLocation& lineLoc) {
   auto found = find(call->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
     found->calls.emplace_back(call->getLocStart().getRawEncoding(), isSimpleCall);
@@ -92,9 +82,8 @@ FunctionManager::isSimpleCall(const clang::CallExpr* call) {
   auto found = find(call->getDirectCallee()->getNameAsString());
   if (found != userFunctions_.end()) {
     for (auto callIt : found->calls) {
-      if (callIt.ID == call->getLocStart().getRawEncoding()) {
+      if (callIt.ID == call->getLocStart().getRawEncoding())
         return callIt.isSimpleCall;
-      }
     }
   }
 
@@ -104,11 +93,10 @@ FunctionManager::isSimpleCall(const clang::CallExpr* call) {
 const clang::SourceLocation&
 FunctionManager::getStmtLoc(clang::CallExpr* call) {
   auto function = find(call->getDirectCallee()->getNameAsString());
-  auto callInfo = std::find_if(function->calls.begin(),
-                               function->calls.end(),
-                               [&](const CallInfo& ci) {
-                                 return call->getLocStart().getRawEncoding() == ci.ID;
-                               });
+  auto pred = [&](const CallInfo& ci) {
+    return call->getLocStart().getRawEncoding() == ci.ID;
+  };
+  auto callInfo = std::find_if(function->calls.begin(), function->calls.end(), pred);
   return callInfo->lineStartLoc;
 }
 
@@ -123,11 +111,4 @@ FunctionManager::getInsertLoc(CallExpr* call) {
   return (isSimpleCall(call)) ? call->getLocStart() : getStmtLoc(call);
 }
 
-void
-FunctionManager::print() {
-  for (auto i = userFunctions_.begin(); i != userFunctions_.end(); ++i) {
-    std::cout << i->name << " " << i->deleteSource << std::endl;
-  }
-}
-
-}
+} // namespace vy

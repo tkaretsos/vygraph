@@ -25,12 +25,12 @@ Analyzer::analyze() {
 
   StatementMatcher simpleCall = callExpr(hasParent(compoundStmt()),
                                          hasDeclaration(funcDef)
-                                         ).bind("simpleCall");
+                                        ).bind("simpleCall");
 
   StatementMatcher stmtWithCall = stmt(hasParent(compoundStmt()),
                                        hasDescendant(callExpr(hasDeclaration(funcDef))),
                                        unless(anyOf(ifStmt(), whileStmt(), forStmt()))
-                                       ).bind("stmtWithCall");
+                                      ).bind("stmtWithCall");
 
   MatchFinder callFinder;
   Analyzer::FunctionCallLocator callLocator;
@@ -42,23 +42,20 @@ Analyzer::analyze() {
 void
 Analyzer::FunctionDefLocator::run(const MatchFinder::MatchResult& result) {
   if (auto function = result.Nodes.getNodeAs<FunctionDecl>("functionDef")) {
-    if (!function->isMain()) {
+    if (!function->isMain())
       functionMgr.addUserFunction(function);
-    }
   }
 }
 
 void
 Analyzer::FunctionCallLocator::run(const MatchFinder::MatchResult& result) {
-  if (auto call = result.Nodes.getNodeAs<CallExpr>("simpleCall")) {
+  if (auto call = result.Nodes.getNodeAs<CallExpr>("simpleCall"))
     functionMgr.addCall(call, true);
-  }
 
   if (auto stmt = result.Nodes.getNodeAs<Stmt>("stmtWithCall")) {
     auto call = findCallInStmt(stmt);
-    if (call != nullptr) {
+    if (call != nullptr)
       functionMgr.addCall(call, false, stmt->getLocStart());
-    }
   }
 }
 
@@ -66,9 +63,8 @@ const CallExpr*
 Analyzer::FunctionCallLocator::findCallInStmt(const Stmt* stmt) {
 
   CallExpr* call = nullptr;
-  if (call = dyn_cast<CallExpr>(const_cast<Stmt*>(stmt))) {
+  if (call = dyn_cast<CallExpr>(const_cast<Stmt*>(stmt)))
     return call;
-  }
 
   if (!stmt->children().empty()) {
     for (auto c : stmt->children()) {

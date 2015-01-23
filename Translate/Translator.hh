@@ -4,8 +4,10 @@
 #include "Translate/CFGAnalyzer.hh"
 
 namespace clang {
+
 class BinaryOperator;
 class CallExpr;
+
 }
 
 namespace vy {

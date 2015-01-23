@@ -8,9 +8,6 @@
 namespace vy {
 
 class TranslateAction : public clang::ASTFrontendAction {
-public:
-  TranslateAction();
-
 protected:
   clang::ASTConsumer* CreateASTConsumer(clang::CompilerInstance&,
                                         llvm::StringRef) override;
@@ -22,6 +19,7 @@ protected:
 private:
   std::stringstream outStream;
   std::string outFileName;
+
 };
 
 } // namespace vy

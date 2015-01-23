@@ -3,8 +3,12 @@
 
 #include <string>
 
-#include "clang/AST/ASTContext.h"
-#include "clang/Basic/SourceLocation.h"
+namespace clang {
+
+class SourceRange;
+class ASTContext;
+
+}
 
 namespace vy {
 namespace util {
