@@ -14,7 +14,11 @@ class Rewriter;
 
 namespace vy {
 
-class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
+  /**
+   * @see http://clang.llvm.org/doxygen/classclang_1_1RecursiveASTVisitor.html
+   * @see http://clang.llvm.org/docs/RAVFrontendAction.html
+   */
+  class InlineASTVisitor : public clang::RecursiveASTVisitor<InlineASTVisitor> {
 public:
   InlineASTVisitor(clang::Rewriter&, clang::ASTContext&);
   bool VisitCallExpr(clang::CallExpr*);
@@ -27,3 +31,5 @@ private:
 } // namespace vy
 
 #endif // VYGRAPH_INLINEASTVISITOR_HH
+
+/** @file */

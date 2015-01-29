@@ -22,3 +22,5 @@ InlineASTVisitor::VisitCallExpr(CallExpr* call) {
 }
 
 } // namespace vy
+
+/** @file */

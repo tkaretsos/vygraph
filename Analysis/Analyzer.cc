@@ -78,3 +78,5 @@ Analyzer::FunctionCallLocator::findCallInStmt(const Stmt* stmt) {
 }
 
 } // namespace vy
+
+/** @file */

@@ -174,3 +174,5 @@ CFGAnalyzer::getLastLoc(const CFGBlock& block) {
 }
 
 }
+
+/** @file */

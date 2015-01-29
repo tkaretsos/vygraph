@@ -7,6 +7,10 @@
 
 namespace vy {
 
+/**
+ * @see http://clang.llvm.org/doxygen/classclang_1_1ASTConsumer.html
+ * @see http://clang.llvm.org/docs/RAVFrontendAction.html
+ */
 class InlineASTConsumer : public clang::ASTConsumer {
 public:
   InlineASTConsumer(clang::Rewriter&, clang::ASTContext&);
@@ -20,3 +24,5 @@ private:
 } // namespace vy
 
 #endif // VYGRAPH_INLINEASTCONSUMER_HH
+
+/** @file */

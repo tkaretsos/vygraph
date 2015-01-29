@@ -11,3 +11,5 @@ bool CLOptions::translateOnly() {
 }
 
 } // namespace vy
+
+/** @file */

@@ -17,3 +17,5 @@ InlineASTConsumer::HandleTopLevelDecl(DeclGroupRef decls) {
 }
 
 }
+
+/** @file */

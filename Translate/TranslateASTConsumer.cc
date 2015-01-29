@@ -27,3 +27,5 @@ TranslateASTConsumer::HandleTopLevelDecl(DeclGroupRef decls) {
 }
 
 } // namespace vy
+
+/** @file */

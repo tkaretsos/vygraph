@@ -17,6 +17,10 @@ template <typename T> class DominatorTreeBase;
 namespace vy {
 namespace util {
 
+/**
+ * @brief Based on LLVM's DominatorTreeBase class.
+ * @see http://llvm.org/doxygen/classllvm_1_1DominatorTreeBase.html
+ */
 class PostDominatorTree {
 public:
   PostDominatorTree();
@@ -39,3 +43,4 @@ private:
 
 #endif // VYGRAPH_POSTDOMINATORTREE_HH
 
+/** @file */

@@ -90,16 +90,6 @@ FunctionManager::isSimpleCall(const clang::CallExpr* call) {
   return false;
 }
 
-const clang::SourceLocation&
-FunctionManager::getStmtLoc(clang::CallExpr* call) {
-  auto function = find(call->getDirectCallee()->getNameAsString());
-  auto pred = [&](const CallInfo& ci) {
-    return call->getLocStart().getRawEncoding() == ci.ID;
-  };
-  auto callInfo = std::find_if(function->calls.begin(), function->calls.end(), pred);
-  return callInfo->lineStartLoc;
-}
-
 const std::map<std::string, std::string>&
 FunctionManager::getVarSubs(CallExpr* call) {
   auto function = find(call->getDirectCallee()->getNameAsString());
@@ -108,7 +98,17 @@ FunctionManager::getVarSubs(CallExpr* call) {
 
 const SourceLocation
 FunctionManager::getInsertLoc(CallExpr* call) {
-  return (isSimpleCall(call)) ? call->getLocStart() : getStmtLoc(call);
+  if (isSimpleCall(call))
+    return call->getLocStart();
+
+  auto function = find(call->getDirectCallee()->getNameAsString());
+  auto pred = [&](const CallInfo& ci) {
+    return call->getLocStart().getRawEncoding() == ci.ID;
+  };
+  auto callInfo = std::find_if(function->calls.begin(), function->calls.end(), pred);
+  return callInfo->lineStartLoc;
 }
 
 } // namespace vy
+
+/** @file */

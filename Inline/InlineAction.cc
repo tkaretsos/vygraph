@@ -50,3 +50,5 @@ InlineAction::writeToMemory() {
 }
 
 } // namespace vy
+
+/** @file */

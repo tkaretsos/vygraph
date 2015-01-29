@@ -7,6 +7,12 @@
 
 namespace vy {
 
+/**
+  * @brief Class that represents the translate action
+  *
+  * @see http://clang.llvm.org/doxygen/classclang_1_1ASTFrontendAction.html
+  * @see http://clang.llvm.org/docs/RAVFrontendAction.html
+  */
 class TranslateAction : public clang::ASTFrontendAction {
 protected:
   clang::ASTConsumer* CreateASTConsumer(clang::CompilerInstance&,
@@ -25,3 +31,5 @@ private:
 } // namespace vy
 
 #endif // VYGRAPH_TRANSLATEACTION_HH
+
+/** @file */

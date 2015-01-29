@@ -47,3 +47,5 @@ TranslateAction::EndSourceFileAction() {
 }
 
 } // namespace vy
+
+/** @file */

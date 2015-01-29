@@ -9,6 +9,15 @@
 namespace vy {
 namespace util {
 
+/**
+ * @brief Wrapper class of `clang::Decl` and `clang::Stmt` base classes.
+ *
+ * Makes easier the use of the common methods of `clang::Decl` and `clang::Stmt`
+ * classes.
+ *
+ * @see http://clang.llvm.org/doxygen/classclang_1_1Decl.html
+ * @see http://clang.llvm.org/doxygen/classclang_1_1Stmt.html
+ */
 class ClangBaseWrapper {
 public:
   ClangBaseWrapper(const clang::Stmt* stmt) :
@@ -50,3 +59,5 @@ private:
 } // namespace vy
 
 #endif
+
+/** @file */

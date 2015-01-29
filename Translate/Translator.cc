@@ -272,3 +272,5 @@ Translator::writeCustomFunctionCall(const CFGBlock& block, const CallExpr* call)
 }
 
 } // namespace vy
+
+/** @file */
