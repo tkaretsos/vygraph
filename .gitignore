@@ -18,6 +18,7 @@ build
 *.kate-swp
 *.expected
 inputs/translate/test_input.sh
+docs/*
 
 ############
 # Qt Creator
